@@ -17,9 +17,10 @@ Find the vault via `surface.config.json`. No vault → `/onboard` first.
 1. **Take stock.** `git log` since the last weave commit (message prefix `weave:`), plus
    a file listing. Incremental = only what changed since then; `--full` = everything.
 
-2. **Ingest raw material.** Any markdown dropped into the vault outside `wiki/` and
-   `share/` (a notes inbox, pasted articles, meeting notes) that is not yet reflected in
-   the wiki: extract what is durable into the right wiki page — update existing pages
+2. **Ingest raw material.** `sources/` is the vault's raw-input layer (Karpathy's
+   Layer 1): immutable documents the owner drops in — articles, papers, notes, exports.
+   Never edit or delete a source. For any source (or stray markdown outside `wiki/` and
+   `share/`) not yet reflected in the wiki: extract what is durable into the right wiki page — update existing pages
    in place rather than appending duplicates. Respect the shield: skip any file whose
    body contains a shield marker (`do-not-syndicate` plus any in the config).
 

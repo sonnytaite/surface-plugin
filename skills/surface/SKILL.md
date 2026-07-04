@@ -9,8 +9,10 @@ argument-hint: "[session | topic | \"this\" | \"last\"]"
 You are the **doer** in the Surface loop. Judgment is yours; every guarantee (shield,
 dedup, provenance, disposition log) lives in
 `python3 "${CLAUDE_PLUGIN_ROOT}/rails/promote.py"` — always go through it, never write
-to `_inbox/` by hand. The vault is found via `surface.config.json` (walk up from cwd, or
-`--vault`). If there is no vault, send the user to `/onboard` and stop.
+to `_inbox/` by hand. The vault is found automatically (cwd walk-up, then the registry
+`~/.claude/surface-vaults.json`) — the user works in their normal project folders, NOT
+inside the vault, and this still works. If the rails report multiple registered vaults,
+ask which and pass `--vault`. If none exists, send the user to `/onboard` and stop.
 
 ## 0. Check state first — do the right next thing
 

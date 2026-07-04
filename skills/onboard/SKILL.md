@@ -109,10 +109,16 @@ Connection management, mentioned once: `promote.py commons list` shows what this
 is connected to (also shown by `status`); `commons remove <name>` disconnects instantly
 and touches nothing already published.
 
-Last practical note: the loop finds the vault by walking up from the current directory,
-so the natural habit is **starting Claude Code sessions inside the vault folder** (or any
-project — then pass the vault via `SURFACE_VAULT` or let the skills ask). Mention it
-once.
+The scaffold follows Karpathy's three layers: `sources/` (raw immutable inputs — drop
+articles, papers, notes there and /weave distils them), `wiki/` (the LLM-maintained,
+human-reviewed knowledge), and a vault `CLAUDE.md` (the schema — any Claude session
+opened in the vault knows the rules). Say so in one sentence; it helps people who read
+the gist recognise the shape.
+
+Last practical note: `init` registers the vault in `~/.claude/surface-vaults.json`, so
+the verbs work from **any** folder — the user keeps working in their normal project
+directories and `/surface` still finds the vault. With several vaults, the skills ask
+which one.
 
 ## Guardrails
 

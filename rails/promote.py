@@ -62,7 +62,31 @@ COMMONS_AUDIENCE_TIERS = {
 
 
 # --- Vault + config -----------------------------------------------------------
+REGISTRY = Path.home() / ".claude" / "surface-vaults.json"
+
+
+def load_registry() -> list[str]:
+    if not REGISTRY.exists():
+        return []
+    try:
+        vaults = json.loads(REGISTRY.read_text())
+    except json.JSONDecodeError:
+        return []
+    return [v for v in vaults if (Path(v).expanduser() / CONFIG_NAME).exists()]
+
+
+def register_vault(root: Path) -> None:
+    vaults = load_registry()
+    if str(root) not in vaults:
+        vaults.append(str(root))
+        REGISTRY.parent.mkdir(parents=True, exist_ok=True)
+        REGISTRY.write_text(json.dumps(vaults, indent=2) + "\n")
+
+
 def find_vault(explicit: str | None) -> Path:
+    """--vault > SURFACE_VAULT > walk up from cwd > registry (if unambiguous).
+    The registry (~/.claude/surface-vaults.json, written by init) is what lets the
+    verbs work from ANY project folder, not only inside the vault."""
     if explicit:
         return Path(explicit).expanduser().resolve()
     env = os.environ.get("SURFACE_VAULT")
@@ -72,11 +96,20 @@ def find_vault(explicit: str | None) -> Path:
     for p in (d, *d.parents):
         if (p / CONFIG_NAME).exists():
             return p
-    print(
-        f"no vault found: no {CONFIG_NAME} here or above, no --vault, no SURFACE_VAULT.\n"
-        "Run the /onboard skill (or `promote.py init --vault <dir>`) first.",
-        file=sys.stderr,
-    )
+    known = load_registry()
+    if len(known) == 1:
+        return Path(known[0]).expanduser().resolve()
+    if known:
+        print("multiple vaults known — pass --vault one of:", file=sys.stderr)
+        for v in known:
+            print(f"  {v}", file=sys.stderr)
+    else:
+        print(
+            f"no vault found: no {CONFIG_NAME} here or above, no --vault, no "
+            "SURFACE_VAULT, none registered.\nRun the /onboard skill "
+            "(or `promote.py init --vault <dir>`) first.",
+            file=sys.stderr,
+        )
     sys.exit(1)
 
 
@@ -219,6 +252,31 @@ def find_inbox_file(v: Vault, target: str) -> Path | None:
     return None
 
 
+VAULT_CLAUDE_MD = """\
+# This is a Surface vault
+
+A personal knowledge vault managed with the `surface` Claude Code plugin
+(https://github.com/sonnytaite/surface-plugin). If you are Claude working in here:
+
+- `sources/` — raw, immutable inputs the owner drops in (articles, papers, notes,
+  exports). Read them; never edit or delete them. /weave distils them into the wiki.
+- `wiki/` — the curated second brain: markdown pages with [[wiki-links]], grouped by
+  category. Update existing pages in place rather than creating near-duplicates; keep
+  `wiki/index.md` current.
+- `share/` — outward-facing artefacts (briefs, digests, packs) and the owner's style,
+  rubric, checklist, and domain-rules files in `share/_style/`. Nothing here is shared
+  without the owner's explicit gate.
+- `surfaces/` — loop state (triage inbox + disposition log), managed by the plugin's
+  rails. Do not write here by hand.
+- Anything marked `do-not-syndicate` (or the shield markers in `surface.config.json`)
+  never leaves this vault — not into candidates, not into shared artefacts, not into
+  a commons.
+
+The verbs: /surface (harvest a session) · /weave (tend the vault) · /share (give
+back) · /scan (find connections).
+"""
+
+
 # --- Commands -------------------------------------------------------------------
 def cmd_init(args) -> int:
     root = Path(args.vault).expanduser().resolve() if args.vault else Path.cwd()
@@ -235,6 +293,7 @@ def cmd_init(args) -> int:
     v = Vault(root)
     for d in (
         v.inbox,
+        root / "sources",
         root / v.cfg["wiki_dir"],
         *(root / p for p in v.cfg["categories"].values()),
         root / v.cfg["share_dir"] / "briefs",
@@ -246,7 +305,11 @@ def cmd_init(args) -> int:
     index = root / v.cfg["wiki_dir"] / "index.md"
     if not index.exists():
         index.write_text("# Wiki index\n\nPages are listed here as they are kept.\n")
-    print(f"vault ready at {root}")
+    claude_md = root / "CLAUDE.md"
+    if not claude_md.exists():
+        claude_md.write_text(VAULT_CLAUDE_MD)
+    register_vault(root)
+    print(f"vault ready at {root}  (registered — the verbs will find it from any folder)")
     return 0
 
 

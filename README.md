@@ -128,12 +128,19 @@ the people building things.
 ```
 your-vault/
 ├── surface.config.json      # paths, categories, commons, shield markers
+├── CLAUDE.md                # the vault's schema — any Claude session here knows the rules
+├── sources/                 # raw, immutable inputs you drop in; /weave distils them
 ├── wiki/                    # the second brain: index + projects/research/themes
 ├── share/                   # what you give back: briefs/ digests/ packs/
 │   ├── _style/              # YOUR copies: house style, rubric, checklist, domain rules
 │   └── lexicon.md           # coined terms, defined once
 └── surfaces/                # loop state: _inbox/ (triage queue) + dispositions.jsonl
 ```
+
+The shape is Karpathy's three layers — `sources/` (input), `wiki/` (LLM-maintained
+knowledge), `CLAUDE.md` (schema) — with the share layer and loop state added. Vaults
+register in `~/.claude/surface-vaults.json` at init, so the verbs work from any project
+folder: you keep working where you normally work, and `/surface` finds the vault.
 
 The `_style/` files are the point: the voice, the selection rubric, the fidelity
 checklist, and your domain rules are markdown you edit, not prompts you can't see.
