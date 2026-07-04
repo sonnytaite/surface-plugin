@@ -71,6 +71,14 @@ already sit in `~/.claude/projects/*/`. Backfill harvests them, bounded.
    to continue — it picks up exactly where this left off."* A month of history is
    typically two to four sittings, and the vault is genuinely useful after the first.
 
+**When the transcripts are gone — the reintroduction session.** Transcript retention is
+finite; projects older than the window (or older than Claude itself) have no sessions
+to sweep. Tell the user plainly, then offer the pattern that works: **start a session in
+the project's folder, walk the repo together — README, git history, the code's shape —
+and interview the owner about the decisions, dead ends, and where it stands now. Then
+`/surface` that session.** The project page and its lessons enter the vault with real
+provenance (this new session), and the owner's memory is the source it honestly is.
+
 ## 2. Read the content — the reasoning, not the first message
 
 Transcripts are JSONL: one event per line with `type` (`user`/`assistant`), message
