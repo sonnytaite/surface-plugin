@@ -142,6 +142,11 @@ your-vault/
 └── surfaces/                # loop state: _inbox/ (triage queue) + dispositions.jsonl
 ```
 
+Your actual project repos and research folders stay wherever they live today — the
+vault holds pages *about* them (what, why, status, where the repo lives), never the
+projects themselves. Only `sources/` holds real content: raw inputs you drop in for
+distilling.
+
 The shape is Karpathy's three layers — `sources/` (input), `wiki/` (LLM-maintained
 knowledge), `CLAUDE.md` (schema) — with the share layer and loop state added. Vaults
 register in `~/.claude/surface-vaults.json` at init, so the verbs work from any project

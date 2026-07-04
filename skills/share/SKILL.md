@@ -55,9 +55,28 @@ not for sharing (contains held material); never publish this to a commons.**
    look stale against reality (a "prototype next week" line from two months ago). List
    them with their page and age.
 
+The review accepts a **time window** ("all research back to May", "projects this
+quarter") — filter by last-touched dates and say the window in the digest title.
+
+**Render it properly (ask once, remember the preference in the config as
+`review_render`):** alongside the `.md`, produce the **back-of-magazine version** — a
+self-contained styled `.html` (multi-column executive-summary layout, inline CSS, print-
+friendly; one short entry per item, stage + last-touched under each title) and, when
+headless Chrome/Chromium is available on the machine, a `.pdf` via
+`--headless --print-to-pdf`. All three files sit together in `share/digests/`. The
+sovereign local render is the point — this document contains held material and never
+goes through an external service.
+
 Present it in conversation too, not just as a file — the whole point is that the owner
-does not go reading the wiki unprompted. If they act on an entry ("carbsync is dead",
-"revive the X research"), update the page's status there and then.
+does not go reading the wiki unprompted.
+
+**Close with the disposition loop, don't just trail off.** Ask (AskUserQuestion):
+**Keep all as-is** / **Walk through them** / **Just the dormant ones**. Walking through
+= batched questions (4 per call), one per item: **Still alive** (leave it) / **Done**
+(mark the page `status: done` — it drops from future drifting/dormant nags but stays in
+the wiki) / **Dead** (mark `status: archived`, move mention out of the index's active
+list) / skip. Apply each answer to the wiki page immediately. This is how old work
+"drops off the surface" deliberately instead of haunting every review.
 
 The rail: because the review digest contains held material, NEVER hand it to
 `promote.py publish` — and say so in the banner. (The rail would refuse a `hold`-tagged

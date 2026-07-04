@@ -99,11 +99,26 @@ solo, and `/scan` will explain the commons when they are ready.
   your vault, and across your team's commons if you have one.
 
 Tell them the cold-start plainly: the loop gets better with use, because every keep/dump
-verdict trains it. Then give them ONE next step, concretely: **go do a real piece of
-work with Claude Code — research a question, draft something, build something — and when
-the session winds down, run `/surface`.** Not homework, not migration: the vault fills
-from real work or not at all. (The fuller first-week arc is in the plugin README; don't
-recite it here — one step is enough.)
+verdict trains it.
+
+## 5. Take stock of their history — offer the first fill
+
+Nobody installing a plugin is on day one of Claude Code. Look at
+`~/.claude/projects/*/` (count substantive transcript files, note the date range and
+project spread) and tell them what you found:
+
+- **Real history** (roughly 5+ substantive sessions): *"You have 23 sessions across 4
+  projects going back to April — your past work can join the vault too."* Offer to run
+  the backfill sweep now (it hands off to `/surface backfill`: bounded batches, keep/dump
+  as normal) or later. Backfilling the most recent batch right now is the strongest
+  first experience — the vault is non-empty within minutes of onboarding.
+- **Little history** (a fresh setup): say so, skip the offer, and give the ONE next
+  step instead: **go do a real piece of work with Claude Code — research a question,
+  draft something, build something — and when the session winds down (or the next
+  morning), run `/surface`.** Not homework, not migration: the vault fills from real
+  work or not at all.
+
+(The fuller first-week arc is in the plugin README; don't recite it here.)
 
 Connection management, mentioned once: `promote.py commons list` shows what this vault
 is connected to (also shown by `status`); `commons remove <name>` disconnects instantly

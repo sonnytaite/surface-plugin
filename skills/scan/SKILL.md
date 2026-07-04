@@ -51,14 +51,33 @@ For each finding: the items (with authors if commons), why the connection is rea
 sentence citing both), and the suggested next action (link the pages / introduce the two
 people / write the naming page / resolve the contradiction).
 
-## 4. Report and act
+## 4. Report, act, and make the connections durable
 
 Write `share/digests/<YYYY-MM-DD>-scan.md` — findings ranked, ~5–15 of them; if you
-found nothing non-obvious, say so, that is a valid result. Present it. Then offer
-(AskUserQuestion, multiSelect) to apply the mechanical ones: wire `[[links]]` both ways
-in the local vault, add `connects:` entries. Never edit the commons content of *other*
-authors — connections to their work go in the report and, if the user wants, a
-`connections.md` note in the commons under their own name.
+found nothing non-obvious, say so, that is a valid result. Present it in conversation.
+
+**A scan report nobody re-reads is a scan wasted** — the findings must land somewhere
+the normal loop keeps alive. Offer per finding (AskUserQuestion, batched): **act on
+it** / **note it** / **drop it**.
+
+- **Act** (mechanical): wire `[[links]]` both ways in the local vault, add `connects:`
+  entries to your own commons items.
+- **Note** (the durable form): create or update a **connection page** in the wiki —
+  `wiki/themes/<slug>.md`, `type: connection` — carrying the so-what in prose: the two
+  (or more) items, why the link is real, what it suggests doing, and provenance to both
+  sides (including author names for commons findings). Once it is a wiki page, the
+  ordinary machinery keeps it alive: `/weave` tends it, `/share review` resurfaces it
+  when it drifts, and a strong one can become a brief for the team. This is the answer
+  to "how does future-me find this again" — connections become first-class knowledge,
+  not report residue.
+- **Drop**: log it in the report as considered-and-dropped so the next scan does not
+  re-litigate it.
+
+For commons scans, also offer to publish the report itself to the commons (it is
+team-relevant by construction; the publish rail applies as always). Never edit the
+commons content of *other* authors — connections to their work go in the report, the
+connection pages, and if the user wants, a `connections.md` note in the commons under
+their own name.
 
 ## Guardrails
 

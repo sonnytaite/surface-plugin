@@ -62,8 +62,13 @@ already sit in `~/.claude/projects/*/`. Backfill harvests them, bounded.
    total across them, then critic + triage exactly as normal. The triage queue is the
    bottleneck — a big backlog means MORE RUNS, never a bigger queue. Dedup makes
    repeat sweeps safe.
-4. **End each run honestly:** what was swept, what remains ("14 sessions left in your
-   window — run `/surface backfill` again to continue"). A month of history is
+4. **Watch the context watermark.** Reading transcripts is context-heavy. When your
+   context use approaches roughly half, stop cleanly at a session boundary — finish the
+   current session's staging and triage, do NOT start reading another transcript. Never
+   run the sweep so deep that the triage happens in a degraded context.
+5. **End each run honestly:** what was swept, what remains, and the restart line —
+   *"14 sessions left in your window. Start a fresh session and run `/surface backfill`
+   to continue — it picks up exactly where this left off."* A month of history is
    typically two to four sittings, and the vault is genuinely useful after the first.
 
 ## 2. Read the content — the reasoning, not the first message
@@ -133,6 +138,23 @@ into a clean wiki page (drop the inbox scaffolding), wire links **both ways** �
 then update `wiki/index.md`. Move the file with `git mv` when the vault is a repo.
 Commit with a plain message (`surface: <n> insights from <session/topic>`); ask before
 pushing.
+
+## Wrapping up? Harvest is time-shiftable
+
+Transcripts persist — nothing is lost by not running `/surface` the second a session
+ends. When the user is in a hurry (closing the laptop, heading out), offer the split
+explicitly instead of making them wait:
+
+- **Stage now, judge later:** extract and stage the candidates (the fast part), spawn
+  the critic as a **background** agent, and tell the user to go — "candidates staged,
+  critic running; next `/surface` starts with your keep/dump questions." Step 0's
+  state-awareness makes the resume automatic.
+- **Nothing now:** tomorrow's `/surface last` (or the next backfill) harvests today's
+  session identically. The morning-after habit is as valid as the session-end habit —
+  what matters is that it happens, not when.
+
+Never guilt the user about deferring; a loop that demands waiting around is a loop that
+gets abandoned.
 
 ## Guardrails
 
