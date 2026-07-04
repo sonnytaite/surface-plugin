@@ -10,18 +10,49 @@ You are setting up a **vault**: a plain folder of markdown that the Surface loop
 writes. One vault per person. Everything the loop learns about the user lives in *their*
 vault; nothing personal lives in the plugin.
 
-## 1. Find out where the vault should live
+## 1. The first question — new vault or existing?
 
-If the user passed a path, use it. Otherwise ask (AskUserQuestion):
+If the user passed a path, adopt it (treat as "existing folder") and skip to step 2.
+Otherwise this is the first thing they ever see, so the options must be self-explanatory
+— assume they have never heard the word "vault". Ask (AskUserQuestion):
 
-- **New folder** — recommend `~/vault` or similar; create it.
-- **Existing notes folder / Obsidian vault** — adopt it in place. The loop only adds
-  `surface.config.json`, a `surfaces/` state dir, and (if absent) `wiki/` and `share/`
-  dirs; it never rewrites existing notes.
+**"Where should your vault live?"** — with a lead-in they read first: *a vault is just a
+folder where your research, projects, and notes live — your second brain. Surface fills
+it from your real working sessions and shares from it, always with you as the gate.*
 
-Also ask for their **name** (stamped as `author` on shared outputs) and whether they want
-the vault to be a **git repo** (recommended — it is the undo button and, later, the
-transport to a team commons).
+- **Create a new vault (Recommended)** — "Start fresh. I'll create the folder and
+  structure for you — nothing to prepare."
+- **Adopt an existing folder** — "You already keep notes: an Obsidian vault, a
+  Karpathy-style LLM wiki, or any folder of markdown. Surface adds its config and state
+  alongside; it never rewrites your notes."
+- **What's a vault? Explain first** — explain in a short paragraph (plain folder +
+  git repo; grows into a densely-linked personal wiki; the model is Andrej Karpathy's
+  LLM Wiki — https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f, a
+  five-minute read, recommended but not required), then re-ask.
+
+**If NEW:** make it effortless — ask one question (AskUserQuestion) with sensible
+defaults, then do everything yourself:
+
+- **Location & name.** Convention: `~/vaults/<context>`, kebab-case, one vault per
+  life-context — e.g. `~/vaults/personal`, `~/vaults/work-research`. Offer
+  `~/vaults/personal` as the default, `~/vaults/work-research` as the second option,
+  and let them type their own. One-vault-per-context matters because sensitivity
+  boundaries differ: keeping work and personal in separate vaults means the shield and
+  sensitivity tiers never have to arbitrate between them. (Multiple vaults are cheap —
+  they can run /onboard again any time.)
+- After scaffolding, point them at Karpathy's gist (link above) as the recommended
+  background read on where this structure comes from — background, not homework; the
+  vault works from minute one.
+
+**If EXISTING:** ask which folder, then look at it before touching it. If it already has
+a structure (e.g. Karpathy-style `sources/` + `wiki/`, or Obsidian folders), map
+`surface.config.json`'s `wiki_dir` and `categories` onto *their* layout rather than
+imposing the default one. Confirm the mapping with them in one sentence before writing.
+
+**Both paths:** also ask for their **name** (stamped as `author` on shared outputs) and
+whether they want the vault to be a **git repo** (recommended — it is the undo button
+and, later, the transport to a team commons; default yes for new vaults, respect an
+existing repo as-is).
 
 ## 2. Scaffold through the rails
 
@@ -59,9 +90,14 @@ explain the commons when they are ready.
 - **/scan** — finds the connections between long lists of work that humans miss — across
   your vault, and across your team's commons if you have one.
 
-Tell them the honest cold-start: the loop gets better with use, because every keep/dump
+Tell them the cold-start plainly: the loop gets better with use, because every keep/dump
 verdict trains it. The first `/surface` run is the acceptance test — point it at a real
 session.
+
+Last practical note: the loop finds the vault by walking up from the current directory,
+so the natural habit is **starting Claude Code sessions inside the vault folder** (or any
+project — then pass the vault via `SURFACE_VAULT` or let the skills ask). Mention it
+once.
 
 ## Guardrails
 

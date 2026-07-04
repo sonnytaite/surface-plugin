@@ -60,11 +60,14 @@ Minimum (this is all of it):
 - Python 3.9+ (stdlib only — no packages, no API keys, no network calls)
 - git
 
-You do **not** need an existing note system. `/onboard` scaffolds a plain-markdown vault
-(a folder + a git repo) in a few minutes, and the loop fills it from your real sessions.
-If you already keep a wiki-style vault (Obsidian or plain folders), `/onboard` adopts it
-in place. A curated, densely-linked personal wiki is where this ends up — it is the
-outcome, not the entry fee.
+You do **not** need an existing note system. A **vault** is just a folder where your
+research, projects, and notes live — your second brain. `/onboard` offers the choice on
+first run: **create a new vault** (it scaffolds everything; the convention is
+`~/vaults/<context>`, one vault per life-context so work and personal never share a
+sensitivity boundary) or **adopt an existing folder** (an Obsidian vault, a
+Karpathy-style LLM wiki, any markdown folder — Surface adds its config alongside and
+never rewrites your notes). A curated, densely-linked personal wiki is where this ends
+up — it is the outcome, not the entry fee.
 
 ## Install
 
@@ -106,8 +109,11 @@ checklist, and your domain rules are markdown you edit, not prompts you can't se
 This plugin packages a loop that was hand-built and dogfooded first; the machinery
 earned its way here by producing briefings a real team read. It stands on:
 
-- **Andrej Karpathy** — the idea of a personal, densely-linked plain-text knowledge
-  base built for both human and LLM readers shaped the vault format.
+- **Andrej Karpathy's [LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)**
+  — the spec for a personal, densely-linked plain-text knowledge base that an LLM
+  maintains and a human reviews shaped the vault format, and his four daily operations
+  map closely onto the verbs here (capture → `/surface`, sync + lint → `/weave`,
+  digest → `/share`). Recommended reading before (or after) your first vault.
 - **Every's [compound-engineering](https://github.com/EveryInc/compound-engineering)
   plugin** — the architectural model for shipping a way-of-working as a Claude Code
   plugin, and the lesson (from their own pivots) that users remember a few workflow
