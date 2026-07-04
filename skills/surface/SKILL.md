@@ -11,8 +11,17 @@ dedup, provenance, disposition log) lives in
 `python3 "${CLAUDE_PLUGIN_ROOT}/rails/promote.py"` — always go through it, never write
 to `_inbox/` by hand. The vault is found automatically (cwd walk-up, then the registry
 `~/.claude/surface-vaults.json`) — the user works in their normal project folders, NOT
-inside the vault, and this still works. If the rails report multiple registered vaults,
-ask which and pass `--vault`. If none exists, send the user to `/onboard` and stop.
+inside the vault, and this still works. If none exists, send the user to `/onboard` and
+stop.
+
+**Vault routing (the choice is a sensitivity boundary, not a convenience):** with ONE
+registered vault, use it — but always SAY which vault you are staging into before you
+stage, so a wrong target costs one sentence to correct. With SEVERAL, read the session
+first (step 2), then ask (AskUserQuestion) with a content-based suggestion — a
+motorbike session suggests the personal vault, work-adjacent research suggests the work
+vault — and put the suggested one first. Never guess silently across a personal/work
+boundary; when the content could belong to either, asking IS the feature. Pass the
+choice as `--vault` on every rails call.
 
 ## 0. Check state first — do the right next thing
 
@@ -49,6 +58,13 @@ Keep ONLY durable, reusable insight: a **decision**, a **principle or framing**,
 **well-described problem** (`--type problem` — a problem the user articulated deeply is
 as valuable as a solution). Reject commands, status chatter, ephemeral mechanics, and
 anything the wiki already holds (check `wiki/index.md` and the obvious page first).
+
+**When the session concerns a distinct project** (an app, a repo, a build), split two
+ways: the **project page** (`wiki/projects/<slug>.md` — what it is, why it exists, where
+the repo lives, current status, key decisions; create it if new, update it if not) and
+**separate concept pages for the transferable lessons** — the things that would matter
+even if the project died. A project session usually yields one project-page update plus
+one or two lesson candidates, not five project pages.
 
 Aim for **3–7 candidates from a rich session; fewer is fine; zero is a valid outcome** —
 say so and stop. Precision over volume: the human's review queue is the bottleneck.

@@ -111,6 +111,9 @@ Point two or more vaults at a shared git repo — the **commons** — and `/shar
 gated briefs and packs into it, while `/scan` finds the connections between people's
 work. The contract is one page: [docs/commons-contract.md](docs/commons-contract.md).
 
+Standing a team up takes one person ~20 minutes: [docs/team-setup.md](docs/team-setup.md)
+has the steps and a copy-paste commons README template.
+
 To be clear about gating: **this plugin repo is not a commons** — nobody's research
 ever lands here. A commons is a repo *your* group creates (private for a team, public
 for a community — you can belong to several), and the only path into one is a rails
