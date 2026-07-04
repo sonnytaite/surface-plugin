@@ -73,11 +73,19 @@ If they wanted git: `git init`, write a `.gitignore` containing `surfaces/_inbox
 
 ## 3. Optional: connect a team commons
 
-Ask whether they have a **team commons repo** (a shared git repo where teammates publish
-briefs and packs — see `${CLAUDE_PLUGIN_ROOT}/docs/commons-contract.md`). If yes, clone it
-somewhere local and set `commons.enabled: true` and `commons.path` in
-`surface.config.json`. If no, skip — the loop is fully useful solo, and `/scan` will
-explain the commons when they are ready.
+Ask whether they have a **commons repo** (a shared git repo where a team or community
+publishes briefs and packs — see `${CLAUDE_PLUGIN_ROOT}/docs/commons-contract.md`). If
+yes, clone it locally and add an entry to the `commons` list in `surface.config.json`:
+
+```json
+"commons": [{ "name": "my-team", "path": "~/vaults/my-team-commons", "audience": "team" }]
+```
+
+The `audience` declaration matters: `team` accepts `share-now` + `team`-tier artefacts;
+`public` accepts `share-now` only — the rails enforce this at publish time, so declare
+it honestly. A person can belong to several commons (a private team one AND a public
+community one); each is its own list entry. If no, skip — the loop is fully useful
+solo, and `/scan` will explain the commons when they are ready.
 
 ## 4. Explain the loop (briefly, in your own words)
 

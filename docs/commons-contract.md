@@ -6,6 +6,36 @@ two vaults publish into one commons, `/scan` can find connections *between peopl
 work*: same problem attacked from two angles, a described problem matching someone
 else's prototype, clusters nobody has named.
 
+**The plugin repo is not a commons.** Nobody's research goes to the repo you installed
+this plugin from, ever — it ships code only. A commons only exists when your group
+creates one and you add it to your own `surface.config.json`. Anyone can create one:
+a team, a community of practice, an organisation, a public interest group.
+
+## Gating — three layers, none of them optional
+
+1. **Your gate (per artefact).** Nothing enters any commons without your explicit
+   approval of that specific brief or pack. `/share` cannot auto-publish.
+2. **The rail (in code).** The only path into a commons is
+   `promote.py publish <artefact> --commons <name>`, and it refuses: `hold`-tier
+   material (everywhere, always); artefacts with **no** sensitivity tag (untagged is a
+   refusal, not a default); `team`-tier material offered to a `public`-audience
+   commons; and any file — pack contents included — carrying a shield marker. A
+   mis-aimed publish fails loudly instead of leaking quietly.
+3. **The repo (git-native).** Who can *read* a commons is repo visibility: a private
+   repo for a team, an internal repo for an org, a public repo for a community. Who can
+   *write* is membership plus, if you want a second human gate at the community
+   boundary, ordinary branch protection — contributors publish to a branch and open a
+   PR; maintainers merge. Nothing new to learn or run; it is just a git repo.
+
+## Choosing an audience honestly
+
+Each commons entry in `surface.config.json` declares `audience: team | public`. Declare
+what the *repo access* actually is, not what you intend: if the repo is world-readable,
+its audience is `public` even if only five friends know the URL — and the rail will then
+correctly refuse `team`-tier material. One person can publish to several commons (a
+private team one and a public community one); each artefact goes to the commons whose
+audience matches its tier.
+
 ## Repo shape
 
 ```

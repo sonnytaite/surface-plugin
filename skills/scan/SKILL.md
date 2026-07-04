@@ -15,10 +15,11 @@ Find the vault via `surface.config.json`.
 
 ## 1. Scope
 
-If no argument, ask (AskUserQuestion): **My vault** / **Team commons** / **Both**.
-If the config has no commons and they choose it, explain the commons contract
-(`${CLAUDE_PLUGIN_ROOT}/docs/commons-contract.md`) and offer to set one up — a plain
-shared git repo is all it takes.
+If no argument, ask (AskUserQuestion): **My vault** / one option **per configured
+commons, by name** (the config's `commons` list — e.g. "healthx (team)",
+"community (public)") / **Everything**. If the config has no commons and they ask for
+one, explain the commons contract (`${CLAUDE_PLUGIN_ROOT}/docs/commons-contract.md`)
+and offer to set one up — a plain shared git repo is all it takes.
 
 ## 2. Build the map
 

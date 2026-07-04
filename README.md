@@ -84,6 +84,14 @@ Then finish a real working session and run `/surface`.
 Point two or more vaults at a shared git repo — the **commons** — and `/share` publishes
 gated briefs and packs into it, while `/scan` finds the connections between people's
 work. The contract is one page: [docs/commons-contract.md](docs/commons-contract.md).
+
+To be clear about gating: **this plugin repo is not a commons** — nobody's research
+ever lands here. A commons is a repo *your* group creates (private for a team, public
+for a community — you can belong to several), and the only path into one is a rails
+command that refuses `hold`-tier, untagged, shielded, or audience-mismatched material
+in code, before git access control even comes into play. Reading is gated by repo
+visibility; writing by repo membership (plus PR review, if a community wants a second
+human gate).
 One field worth calling out: `type: problem` is first-class. A fully-described,
 evidence-enriched problem is as valuable a contribution as a solution — often more —
 and it is what lets the commons match the people who understand problems deeply with

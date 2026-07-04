@@ -83,9 +83,19 @@ is weaker than the thing itself. Assemble `share/packs/<slug>/`:
    leaves the vault, and when. On their approval, log to `share/dispositions.jsonl`:
    `{"id":"<slug>","ts":"...","verdict":"written","kind":"brief|pack|digest","stage":"...","sensitivity":"..."}`
    — and log `"shared"` when they actually send it (the strongest taste signal).
-3. **Commons copy (only if enabled and only for share-now/team):** copy the gated
-   artefact into the commons repo path from the config, commit there with
-   `share(<author>): <title>`. Never push the commons without asking.
+3. **Commons publish (only through the rails, never a manual copy):** if the config
+   lists commons and the user wants this artefact shared beyond their vault, ask which
+   commons (they are named in the config, each with an `audience`), then:
+
+   ```bash
+   python3 "${CLAUDE_PLUGIN_ROOT}/rails/promote.py" publish <artefact> --commons <name>
+   ```
+
+   The rail enforces the boundary in code: `hold` and untagged artefacts are refused
+   everywhere; `team`-tier is refused by a `public`-audience commons; shielded content
+   is refused file-by-file (packs included). If it refuses, relay the reason — do not
+   work around it by copying by hand. On success, commit in the commons repo
+   (`share(<author>): <title>`) and push only when the user says go.
 
 ## Guardrails
 

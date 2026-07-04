@@ -49,8 +49,15 @@ DEFAULT_CONFIG = {
         "research": "wiki/research",
         "themes": "wiki/themes",
     },
-    "commons": {"enabled": False, "path": ""},
+    "commons": [],
     "shield_markers": [],
+}
+
+# Which sensitivity tiers may enter a commons, by the commons' declared audience.
+# `hold` never leaves the vault; a missing sensitivity tag is a refusal, not a default.
+COMMONS_AUDIENCE_TIERS = {
+    "team": ("share-now", "team"),
+    "public": ("share-now",),
 }
 
 
@@ -95,10 +102,23 @@ class Vault:
         self.shield_markers = tuple(
             m.lower() for m in (*DEFAULT_SHIELD_MARKERS, *self.cfg.get("shield_markers", []))
         )
+        # commons: normalise legacy dict form to the list form
+        raw = self.cfg.get("commons", [])
+        if isinstance(raw, dict):
+            raw = [{"name": "default", "path": raw.get("path", ""), "audience": "team"}] \
+                if raw.get("enabled") and raw.get("path") else []
+        self.commons = [c for c in raw if c.get("path")]
 
     def is_shielded(self, body: str) -> bool:
         low = (body or "").lower()
         return any(m in low for m in self.shield_markers)
+
+    def find_commons(self, name: str | None) -> dict | None:
+        if not self.commons:
+            return None
+        if name:
+            return next((c for c in self.commons if c.get("name") == name), None)
+        return self.commons[0] if len(self.commons) == 1 else None
 
 
 # --- Small helpers -------------------------------------------------------------
@@ -337,6 +357,91 @@ def cmd_reconcile(args) -> int:
     return 0
 
 
+def cmd_publish(args) -> int:
+    """The ONLY sanctioned path from a vault into a commons. Refuses, in order:
+    unknown commons; missing/`hold` sensitivity; a tier the commons' audience does
+    not permit; any shielded content anywhere in the artefact. Copy-only — the
+    caller commits/pushes the commons repo, with the human's explicit okay."""
+    v = Vault(find_vault(args.vault))
+    if not v.commons:
+        print("no commons configured — add one to surface.config.json (see docs/commons-contract.md)",
+              file=sys.stderr)
+        return 1
+    commons = v.find_commons(args.commons)
+    if not commons:
+        names = ", ".join(c.get("name", "?") for c in v.commons)
+        print(f"which commons? pass --commons <name>  (configured: {names})", file=sys.stderr)
+        return 1
+    audience = commons.get("audience", "team")
+    allowed = COMMONS_AUDIENCE_TIERS.get(audience)
+    if not allowed:
+        print(f"commons {commons.get('name')!r} has unknown audience {audience!r} "
+              f"(use one of: {', '.join(COMMONS_AUDIENCE_TIERS)})", file=sys.stderr)
+        return 1
+    croot = Path(commons["path"]).expanduser()
+    if not croot.is_dir():
+        print(f"commons path does not exist: {croot}", file=sys.stderr)
+        return 1
+
+    src = Path(args.artefact).expanduser()
+    if not src.exists():
+        print(f"artefact not found: {src}", file=sys.stderr)
+        return 1
+    is_pack = src.is_dir()
+    meta_file = (src / "README.md") if is_pack else src
+    if not meta_file.exists():
+        print("a pack must carry a README.md with the commons frontmatter", file=sys.stderr)
+        return 1
+
+    fm = parse_frontmatter(meta_file)
+    tier = (fm.get("sensitivity") or "").lower()
+    if tier == "hold":
+        print("REFUSED: sensitivity is `hold` — hold-tier material never enters a commons.",
+              file=sys.stderr)
+        return 2
+    if tier not in allowed:
+        have = tier or "(missing)"
+        print(f"REFUSED: sensitivity {have} is not allowed in a {audience!r} commons "
+              f"(allowed: {', '.join(allowed)}). Tag the artefact honestly, or pick a "
+              f"commons whose audience matches.", file=sys.stderr)
+        return 2
+
+    files = sorted(p for p in src.rglob("*") if p.is_file()) if is_pack else [src]
+    for f in files:
+        try:
+            body = f.read_text()
+        except (UnicodeDecodeError, OSError):
+            continue  # binary artefact content — the shield applies to text
+        if v.is_shielded(body):
+            print(f"REFUSED: shielded content in {f.relative_to(src.parent)} — "
+                  "nothing shielded ever enters a commons.", file=sys.stderr)
+            return 2
+
+    author = slug(v.cfg.get("author") or "")
+    if author == "untitled":
+        print("config has no `author` — set it in surface.config.json (it names your "
+              "directory in the commons)", file=sys.stderr)
+        return 1
+    kind = "packs" if is_pack else ("digests" if "digest" in src.name else "briefs")
+    dest = croot / author / kind / src.name
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if is_pack:
+        import shutil
+        if dest.exists():
+            shutil.rmtree(dest)
+        shutil.copytree(src, dest)
+    else:
+        dest.write_text(src.read_text())
+    append_disposition(v, {"id": slug(src.stem), "ts": now_iso(), "verdict": "published",
+                           "commons": commons.get("name"), "audience": audience,
+                           "sensitivity": tier, "artefact": str(src)})
+    print(f"published -> {dest}  (commons {commons.get('name')!r}, audience {audience}, "
+          f"tier {tier})")
+    print("Now commit + push the commons repo when the owner says go — the copy alone "
+          "is not shared until pushed.")
+    return 0
+
+
 def cmd_status(args) -> int:
     v = Vault(find_vault(args.vault))
     rows = read_dispositions(v)
@@ -388,6 +493,12 @@ def main(argv=None) -> int:
     pd.add_argument("verdict")
     pd.add_argument("--reason", default="")
     pd.set_defaults(func=cmd_dispose)
+
+    pb = sub.add_parser("publish", parents=[common],
+                        help="Copy a gated brief/pack into a commons (tier + shield enforced)")
+    pb.add_argument("artefact", help="path to a brief .md or a pack directory")
+    pb.add_argument("--commons", help="commons name from surface.config.json (optional if only one)")
+    pb.set_defaults(func=cmd_publish)
 
     ps = sub.add_parser("status", parents=[common], help="Show disposition counts + inbox size")
     ps.set_defaults(func=cmd_status)
