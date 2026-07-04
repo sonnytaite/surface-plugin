@@ -134,15 +134,23 @@ your own candidates.
 
 **Triage in conversation:** present each candidate — title, two-line gist, the critic's
 verdict — and ask the user with AskUserQuestion (max 4 questions per call, so batch;
-multiSelect off): options **Keep** / **Dump** / **Skip for now**, and they can type notes
-via "Other". For each answer:
+multiSelect off): options **Keep** / **Dump** / **Skip for now** / **Park**, and they
+can type notes via "Other". For each answer:
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/rails/promote.py" dispose <candidate_id> <keep|dump> --reason "<their note, if any>"
+python3 "${CLAUDE_PLUGIN_ROOT}/rails/promote.py" dispose <candidate_id> <keep|dump|park> --reason "<their note, if any>"
 ```
 
-Skipped candidates stay in `_inbox/` for next time. The user can also triage later in
-their editor by setting `status:` — mention it once, not every run.
+The verdicts mean different things to the learning signal — use them precisely:
+- **Dump** = "this is not durable insight" (trains the taste).
+- **Park** = "real, but belongs in a *different vault*" (work-adjacent content in a
+  personal vault, or vice versa). The file stays in `_inbox/` with `status: parked`,
+  stops counting as waiting-on-you, and is ready to re-home later. Never dump
+  mis-homed content — that teaches the wrong lesson.
+- **Skip** = "undecided, ask me again" — stays in the queue and the counts.
+
+The user can also triage later in their editor by setting `status:` — mention it once,
+not every run.
 
 ## 5. Weave the keeps in
 

@@ -334,7 +334,9 @@ def write_dashboard(v: Vault) -> Path:
             days_idle = int((datetime.now(timezone.utc) - then).days)
         except ValueError:
             pass
-    inbox_n = len(list(v.inbox.glob("*.md"))) if v.inbox.exists() else 0
+    inbox_all = list(v.inbox.glob("*.md")) if v.inbox.exists() else []
+    parked_n = sum(1 for f in inbox_all if parse_frontmatter(f).get("status") == "parked")
+    inbox_n = len(inbox_all) - parked_n
     share = v.root / v.cfg["share_dir"]
 
     # --- "What should you do next?" — one adaptive suggestion, with its why -----
@@ -491,7 +493,7 @@ command · the files are the truth — read and edit them in Obsidian or any edi
 <h2>Are you keeping the habit?</h2>
 <p class=stat>{len(sessions)}<small>session{'s' if len(sessions) != 1 else ''} captured</small></p>
 <p class=read>{last_read} {keep_read}</p>
-<p class=fine>{f"{inbox_n} waiting for your decision." if inbox_n else "Nothing waiting on you."}</p>
+<p class=fine>{f"{inbox_n} waiting for your decision. " if inbox_n else "Nothing waiting on you. "}{f"{parked_n} parked for another vault." if parked_n else ""}</p>
 </article>
 
 <article class=card>
@@ -658,8 +660,8 @@ def cmd_annotate(args) -> int:
 
 
 def cmd_dispose(args) -> int:
-    if args.verdict not in {"keep", "act", "dump"}:
-        print("verdict must be keep|act|dump", file=sys.stderr)
+    if args.verdict not in {"keep", "act", "dump", "park"}:
+        print("verdict must be keep|act|dump|park", file=sys.stderr)
         return 1
     v = Vault(find_vault(args.vault))
     append_disposition(v, {"id": args.candidate_id, "ts": now_iso(),
@@ -668,6 +670,12 @@ def cmd_dispose(args) -> int:
         f = find_inbox_file(v, args.candidate_id)
         if f:
             f.unlink()
+    elif args.verdict == "park":
+        # Decided, but homed elsewhere (e.g. belongs in a different vault). The file
+        # stays in _inbox with status: parked so it never counts as "waiting on you".
+        f = find_inbox_file(v, args.candidate_id)
+        if f:
+            f.write_text(f.read_text().replace("status: proposed\n", "status: parked\n", 1))
     print(f"recorded: {args.candidate_id} -> {args.verdict}")
     return 0
 
