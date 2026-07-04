@@ -305,9 +305,10 @@ def write_dashboard(v: Vault) -> Path:
     pages = [_page_meta(v, f) for f in sorted(wiki.rglob("*.md")) if f.name != "index.md"] \
         if wiki.exists() else []
     open_pages = [p for p in pages if p["status"] not in ("done", "archived")]
-    ladder = {"active": [p for p in open_pages if p["age"] <= 14],
-              "drifting": [p for p in open_pages if 14 < p["age"] <= 42],
-              "dormant": [p for p in open_pages if p["age"] > 42]}
+    fresh = [p for p in open_pages if p["age"] <= 14]
+    drifting = [p for p in open_pages if 14 < p["age"] <= 42]
+    dormant = [p for p in open_pages if p["age"] > 42]
+    fading = sorted(drifting + dormant, key=lambda p: p["age"])
     closed = [p for p in pages if p["status"] in ("done", "archived")]
     by_cat: dict[str, int] = {}
     for p in pages:
@@ -321,106 +322,224 @@ def write_dashboard(v: Vault) -> Path:
         m = re.match(r"transcript://([^#]+)", r.get("source") or "")
         if m:
             sessions.add(m.group(1))
-    kept, dumped = counts.get("keep", 0) + counts.get("act", 0), counts.get("dump", 0)
-    keep_rate = f"{kept}/{kept + dumped}" if (kept + dumped) else "—"
+    kept = counts.get("keep", 0) + counts.get("act", 0)
+    dumped = counts.get("dump", 0)
+    published = counts.get("published", 0)
+    protected = counts.get("shielded", 0)
     last_ts = max((r.get("ts", "") for r in rows), default="")
-    inbox_files = sorted(v.inbox.glob("*.md")) if v.inbox.exists() else []
-
+    days_idle = None
+    if last_ts:
+        try:
+            then = datetime.strptime(last_ts[:10], "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            days_idle = int((datetime.now(timezone.utc) - then).days)
+        except ValueError:
+            pass
+    inbox_n = len(list(v.inbox.glob("*.md"))) if v.inbox.exists() else 0
     share = v.root / v.cfg["share_dir"]
 
-    def library(sub: str) -> str:
+    # --- "What should you do next?" — one adaptive suggestion, with its why -----
+    if inbox_n:
+        nxt = ("Run <b>/surface</b> and decide keep-or-let-go.",
+               f"{inbox_n} idea{'s' if inbox_n != 1 else ''} from earlier sessions "
+               f"{'are' if inbox_n != 1 else 'is'} waiting for your call.")
+    elif not pages and not sessions:
+        nxt = ("Do a real piece of work, then run <b>/surface</b>.",
+               "Your vault is ready and empty — it fills from real sessions, "
+               "not from homework.")
+    elif len(fading) >= 5:
+        nxt = ("Run <b>/share review</b>.",
+               f"{len(fading)} pieces of work are fading from memory — "
+               "bring past-you back to the table.")
+    elif days_idle is not None and days_idle > 7:
+        nxt = ("Run <b>/surface backfill</b> to catch up.",
+               f"It has been {days_idle} days since the last capture — "
+               "the transcripts kept everything while you were away.")
+    else:
+        nxt = ("All caught up — end your next real session with <b>/surface</b>.",
+               "That one habit keeps the whole thing alive.")
+
+    keep_read = (f"You keep about {kept} of every {kept + dumped} ideas — letting go "
+                 "is part of the training." if (kept + dumped)
+                 else "No keep-or-let-go decisions yet — they start with your first /surface.")
+    last_read = (f"Last capture {esc(last_ts[:10])}." if last_ts
+                 else "No captures yet.")
+
+    cats_html = " · ".join(f"{esc(k)} {n}" for k, n in sorted(by_cat.items())) \
+        or "It fills from your first kept idea."
+
+    def fading_rows(cap: int = 10) -> str:
+        out = []
+        for p in fading[:cap]:
+            tag = "drifting" if p["age"] <= 42 else "dormant"
+            out.append(f"<tr><td>{link(p['path'], p['title'])}</td>"
+                       f"<td class=age>{tag}</td><td class=age>{p['date']}</td></tr>")
+        if len(fading) > cap:
+            out.append(f"<tr><td class=age colspan=3>… and {len(fading) - cap} more "
+                       "— /share review walks all of them</td></tr>")
+        return "\n".join(out)
+
+    def library(sub: str, empty: str) -> str:
         d = share / sub
-        if not d.exists():
-            return "<li>none yet</li>"
         items = []
-        seen: set[str] = set()
-        entries = sorted(d.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True)
-        for p in entries:
-            if p.name.startswith(("_", ".")) or p.stem in seen:
-                continue
-            seen.add(p.stem)
-            sib = [link(s, s.suffix[1:]) for s in sorted(d.glob(p.stem + ".*"))
-                   if s.suffix in (".md", ".html", ".pdf")]
-            if p.is_dir():
-                sib = [link(p, "open")]
-            if sib:
-                items.append(f"<li>{esc(p.stem)} · {' · '.join(sib)}</li>")
-        return "\n".join(items) or "<li>none yet</li>"
+        if d.exists():
+            seen: set[str] = set()
+            for p in sorted(d.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True):
+                if p.name.startswith(("_", ".")) or p.stem in seen:
+                    continue
+                seen.add(p.stem)
+                sib = [link(s, s.suffix[1:]) for s in sorted(d.glob(p.stem + ".*"))
+                       if s.suffix in (".md", ".html", ".pdf")]
+                if p.is_dir():
+                    sib = [link(p, "open")]
+                if sib:
+                    items.append(f"<li><span class=t>{esc(p.stem.replace('-', ' '))}</span> "
+                                 f"<span class=fmt>{' · '.join(sib)}</span></li>")
+        return "\n".join(items) or f"<li class=empty>{empty}</li>"
 
-    def ladder_list(key: str, cap: int = 12) -> str:
-        ps = sorted(ladder[key], key=lambda p: p["age"])
-        out = [f"<li>{link(p['path'], p['title'])} <span class=dim>{p['date']}</span></li>"
-               for p in ps[:cap]]
-        if len(ps) > cap:
-            out.append(f"<li class=dim>… and {len(ps) - cap} more</li>")
-        return "\n".join(out) or "<li class=dim>none</li>"
+    def commons_line(c: dict) -> str:
+        ok = Path(c["path"]).expanduser().is_dir()
+        aud = "private team space" if c.get("audience") == "team" else "public space"
+        state = "connected and working" if ok \
+            else "<b class=warn>folder missing — reconnect or re-clone</b>"
+        return (f"<li><span class=t>{esc(c.get('name', '?'))}</span> — {aud}, {state}."
+                f"<span class=path>{esc(c['path'])}</span></li>")
 
-    commons_html = "".join(
-        f"<li><b>{esc(c.get('name', '?'))}</b> · audience {esc(c.get('audience', '?'))} · "
-        f"{'ok' if Path(c['path']).expanduser().is_dir() else '<b>MISSING PATH</b>'} · "
-        f"<span class=dim>{esc(c['path'])}</span></li>"
-        for c in v.commons) or "<li class=dim>none — solo vault</li>"
+    commons_html = "".join(commons_line(c) for c in v.commons) or \
+        ("<li class=empty>None — this vault is solo. A team commons is a shared git "
+         "repo; /scan can help set one up.</li>")
 
-    cats_html = "".join(f"<li>{esc(k)}: {n}</li>" for k, n in sorted(by_cat.items())) \
-        or "<li class=dim>empty — run /surface after your next real session</li>"
+    shared_total = published + sum(
+        1 for sub in ("briefs", "packs") if (share / sub).exists()
+        for p in (share / sub).iterdir() if not p.name.startswith(("_", ".")))
 
-    body = f"""<!doctype html><html><head><meta charset="utf-8">
-<title>surface — {esc(v.root.name)}</title>
+    body = f"""<!doctype html><html lang=en><head><meta charset="utf-8">
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>{esc(v.root.name)} — surface</title>
 <style>
- body{{font:15px/1.5 -apple-system,system-ui,sans-serif;max-width:960px;margin:2rem auto;
-      padding:0 1rem;color:#1a1a1a;background:#fafaf7}}
- h1{{font-size:1.4rem}} h2{{font-size:1.05rem;margin:1.6rem 0 .4rem;border-bottom:1px solid #ddd}}
- .grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}}
- .card{{background:#fff;border:1px solid #e3e1da;border-radius:8px;padding: .8rem 1rem}}
- .dim{{color:#8a877e;font-size:.85em}} ul{{margin:.3rem 0;padding-left:1.2rem}}
- .stamp{{color:#8a877e;font-size:.8rem}} a{{color:#155e63}}
- .big{{font-size:1.6rem;font-weight:700}} td,th{{text-align:left;padding:.15rem .8rem .15rem 0}}
+:root{{--paper:#f6f2ea;--card:#fdfbf7;--ink:#26221a;--soft:#8c8577;--line:#ddd6c8;
+ --accent:#0f5c56;--warm:#a04b2c}}
+*{{box-sizing:border-box;margin:0}}
+body{{background:var(--paper);color:var(--ink);max-width:1020px;margin:0 auto;
+ padding:3.5rem 1.5rem 2.5rem;
+ font:16px/1.55 "Iowan Old Style","Palatino Nova",Palatino,"Book Antiqua",Charter,Georgia,serif}}
+a{{color:var(--accent);text-decoration:none;border-bottom:1px solid #0f5c5640}}
+a:hover{{border-bottom-color:var(--accent)}}
+.kicker{{font:600 .68rem/1 -apple-system,system-ui,sans-serif;letter-spacing:.22em;
+ text-transform:uppercase;color:var(--soft)}}
+header h1{{font-size:2.5rem;font-weight:600;letter-spacing:-.01em;margin:.35rem 0 .5rem}}
+.stamp{{color:var(--soft);font-size:.85rem;font-style:italic}}
+.next{{margin:2.2rem 0 2.4rem;padding:1.15rem 1.4rem;background:var(--card);
+ border-left:3px solid var(--accent);box-shadow:0 1px 0 var(--line)}}
+.next p.do{{font-size:1.3rem;margin:.3rem 0 .2rem}}
+.next p.why{{color:var(--soft);font-size:.95rem}}
+.cards{{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:1.1rem}}
+.card{{background:var(--card);border:1px solid var(--line);padding:1.1rem 1.2rem 1rem;
+ animation:rise .45s ease-out}}
+.card:nth-child(2){{animation-delay:.05s}}.card:nth-child(3){{animation-delay:.1s}}
+.card:nth-child(4){{animation-delay:.15s}}
+@keyframes rise{{from{{opacity:.25;transform:translateY(5px)}}to{{opacity:1;transform:none}}}}
+@media(prefers-reduced-motion:reduce),print{{.card{{animation:none}}}}
+.card h2{{font-size:1.02rem;font-weight:600;font-style:italic;margin-bottom:.55rem}}
+.stat{{font-size:2.6rem;line-height:1;font-variant-numeric:tabular-nums;margin:.2rem 0 .1rem}}
+.stat small{{font-size:.85rem;font-variant:normal;color:var(--soft);margin-left:.45rem;
+ font-family:-apple-system,system-ui,sans-serif}}
+.read{{font-size:.92rem;margin:.45rem 0 .2rem}}
+.fine{{font-size:.85rem;color:var(--soft)}}
+section{{margin-top:2.4rem}}
+section>h2{{font-size:1.15rem;font-style:italic;font-weight:600;margin-bottom:.6rem}}
+table{{width:100%;border-collapse:collapse;font-size:.95rem}}
+td{{padding:.45rem .8rem .45rem 0;border-top:1px solid var(--line)}}
+.age{{color:var(--soft);font-size:.85rem;white-space:nowrap}}
+.lib{{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1.1rem}}
+.lib ul{{list-style:none;padding:0}}
+.lib li{{padding:.4rem 0;border-top:1px solid var(--line);font-size:.93rem}}
+.lib h3{{font-size:.95rem;font-style:italic;font-weight:600}}
+.t{{text-transform:capitalize}} .fmt{{color:var(--soft);font-size:.85rem;margin-left:.3rem}}
+.empty{{color:var(--soft);font-style:italic}}
+.path{{display:block;color:var(--soft);font-size:.75rem;font-family:ui-monospace,monospace;
+ word-break:break-all}}
+.warn{{color:var(--warm)}}
+footer{{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--line);
+ color:var(--soft);font-size:.85rem}}
+footer b{{color:var(--ink);font-weight:600}}
+ul.plain{{list-style:none;padding:0}} ul.plain li{{padding:.3rem 0}}
 </style></head><body>
-<h1>surface · {esc(v.root.name)}</h1>
-<p class=stamp>Generated {now_iso()} — a read-only lens, regenerated after every verb.
-The files are the truth; edit and explore them in Obsidian or any editor.</p>
 
-<div class=grid>
-<div class=card><h2>The brain</h2>
-<p><span class=big>{len(pages)}</span> wiki pages · keep rate {keep_rate}</p>
-<ul>{cats_html}</ul>
-<p class=dim>{len(closed)} closed (done/archived)</p></div>
+<header>
+<p class=kicker>Surface · your second brain</p>
+<h1>{esc(v.root.name.replace('-', ' '))}</h1>
+<p class=stamp>Snapshot taken {now_iso()[:10]} · this page regenerates after every
+command · the files are the truth — read and edit them in Obsidian or any editor.</p>
+</header>
 
-<div class=card><h2>Recency</h2>
-<table><tr><th>Active (&le;2w)</th><td>{len(ladder['active'])}</td></tr>
-<tr><th>Drifting (2–6w)</th><td>{len(ladder['drifting'])}</td></tr>
-<tr><th>Dormant (&gt;6w)</th><td>{len(ladder['dormant'])}</td></tr></table>
-<p class=dim>Drifting/dormant pile up? Run <b>/share review</b>.</p></div>
-
-<div class=card><h2>Harvest scorecard</h2>
-<table>
-<tr><th>sessions harvested</th><td>{len(sessions)}</td></tr>
-<tr><th>candidates proposed</th><td>{counts.get('proposed', 0)}</td></tr>
-<tr><th>kept / dumped</th><td>{kept} / {dumped}</td></tr>
-<tr><th>shielded (refused)</th><td>{counts.get('shielded', 0)}</td></tr>
-<tr><th>published to commons</th><td>{counts.get('published', 0)}</td></tr>
-<tr><th>awaiting triage</th><td>{len(inbox_files)}</td></tr>
-<tr><th>last activity</th><td>{esc(last_ts[:10] or '—')}</td></tr></table></div>
-
-<div class=card><h2>Setup</h2>
-<ul><li>author: {esc(v.cfg.get('author') or '(unset)')}</li>
-<li>vault: <span class=dim>{esc(v.root)}</span></li>
-<li>wiki: {esc(v.cfg['wiki_dir'])}/ · share: {esc(v.cfg['share_dir'])}/</li></ul>
-<h2>Commons</h2><ul>{commons_html}</ul>
-<p class=dim>Config is the file surface.config.json — this card only displays it.</p></div>
+<div class=next>
+<p class=kicker>What should you do next?</p>
+<p class=do>{nxt[0]}</p>
+<p class=why>{nxt[1]}</p>
 </div>
 
-<h2>Drifting</h2><ul>{ladder_list('drifting')}</ul>
-<h2>Dormant</h2><ul>{ladder_list('dormant')}</ul>
+<div class=cards>
+<article class=card>
+<h2>Is your brain growing?</h2>
+<p class=stat>{len(pages)}<small>page{'s' if len(pages) != 1 else ''}</small></p>
+<p class=read>{len(fresh)} touched in the last two weeks.</p>
+<p class=fine>{cats_html}{f" · {len(closed)} closed" if closed else ""}</p>
+</article>
 
-<div class=grid>
-<div class=card><h2>Digests &amp; reviews</h2><ul>{library('digests')}</ul></div>
-<div class=card><h2>Briefs</h2><ul>{library('briefs')}</ul></div>
-<div class=card><h2>Packs</h2><ul>{library('packs')}</ul></div>
+<article class=card>
+<h2>Are you keeping the habit?</h2>
+<p class=stat>{len(sessions)}<small>session{'s' if len(sessions) != 1 else ''} captured</small></p>
+<p class=read>{last_read} {keep_read}</p>
+<p class=fine>{f"{inbox_n} waiting for your decision." if inbox_n else "Nothing waiting on you."}</p>
+</article>
+
+<article class=card>
+<h2>What are you forgetting?</h2>
+<p class=stat>{len(fading)}<small>fading</small></p>
+<p class=read>{f"{len(drifting)} drifting (2–6 weeks old), {len(dormant)} dormant (older)."
+               if fading else "Nothing — everything is fresh or deliberately closed."}</p>
+<p class=fine>{"The list is below — /share review walks it with you." if fading
+               else "This fills as work ages; /share review is the antidote."}</p>
+</article>
+
+<article class=card>
+<h2>What have you given back?</h2>
+<p class=stat>{shared_total}<small>made to share</small></p>
+<p class=read>{published} actually published to a team space — writing and sharing
+are separate gates.</p>
+<p class=fine>{protected} private item{'s' if protected != 1 else ''} automatically
+blocked from ever leaving.</p>
+</article>
 </div>
 
-<p class=stamp>The verbs: /surface (harvest a session) · /weave (tend the vault) ·
-/share (give back — or “/share review” for your own recall) · /scan (find connections).</p>
+{f'''<section>
+<h2>Fading — worth a look before it is gone</h2>
+<table>{fading_rows()}</table>
+</section>''' if fading else ""}
+
+<section>
+<h2>Your library — everything made to share or recall</h2>
+<div class=lib>
+<div><h3>Digests &amp; reviews</h3><ul>{library("digests", "Run /share for your first digest — or /share review to see everything you have.")}</ul></div>
+<div><h3>Briefs</h3><ul>{library("briefs", "A brief is one idea, told properly — /share offers them once the wiki has substance.")}</ul></div>
+<div><h3>Packs</h3><ul>{library("packs", "A pack is the artefact itself, ready to hand over — /share &lt;project-path&gt;.")}</ul></div>
+</div>
+</section>
+
+<section>
+<h2>Your team connection</h2>
+<ul class=plain>{commons_html}</ul>
+</section>
+
+<footer>
+<p><b>{esc(v.cfg.get('author') or 'Unnamed')}</b>'s vault at
+<span class=path>{esc(v.root)}</span></p>
+<p style="margin-top:.5rem">Settings live in surface.config.json (this page only reads
+them — run /onboard to change answers). The four commands, plainly:
+<b>/surface</b> capture what a session taught you · <b>/weave</b> tidy and connect the
+whole vault · <b>/share</b> give work back (or “/share review” to remind yourself) ·
+<b>/scan</b> find connections across yours and your team's work.</p>
+</footer>
 </body></html>"""
     out = v.root / "dashboard.html"
     out.write_text(body)
