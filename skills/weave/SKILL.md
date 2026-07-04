@@ -42,7 +42,8 @@ Find the vault via `surface.config.json`. No vault → `/onboard` first.
 6. **Close.** Update `wiki/index.md` (counts, new pages), write a short weave log entry
    at the top of `<state_dir>/weave-log.md` (date, what changed, what needs the user),
    and commit: `weave: <summary>`. `--dry-run` = do everything except the commit.
-   Ask before pushing.
+   Ask before pushing. Then regenerate the lens:
+   `python3 "${CLAUDE_PLUGIN_ROOT}/rails/promote.py" dashboard --vault <vault>`.
 
 ## When to ask questions
 

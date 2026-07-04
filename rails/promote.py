@@ -277,6 +277,162 @@ back) · /scan (find connections).
 """
 
 
+# --- Dashboard (the generated, read-only lens) ----------------------------------
+def _page_meta(v: Vault, f: Path) -> dict:
+    fm = parse_frontmatter(f)
+    title = fm.get("title") or f.stem.replace("-", " ")
+    try:
+        rel = f.relative_to(v.root / v.cfg["wiki_dir"])
+        category = rel.parts[0] if len(rel.parts) > 1 else "general"
+    except ValueError:
+        category = "general"
+    age_days = (datetime.now(timezone.utc).timestamp() - f.stat().st_mtime) / 86400
+    return {"title": title, "path": f, "category": category, "age": age_days,
+            "status": (fm.get("status") or "").lower(),
+            "date": datetime.fromtimestamp(f.stat().st_mtime, timezone.utc).strftime("%Y-%m-%d")}
+
+
+def write_dashboard(v: Vault) -> Path:
+    import html as H
+
+    def esc(s: str) -> str:
+        return H.escape(str(s))
+
+    def link(p: Path, label: str | None = None) -> str:
+        return f'<a href="{esc(p.relative_to(v.root))}">{esc(label or p.name)}</a>'
+
+    wiki = v.root / v.cfg["wiki_dir"]
+    pages = [_page_meta(v, f) for f in sorted(wiki.rglob("*.md")) if f.name != "index.md"] \
+        if wiki.exists() else []
+    open_pages = [p for p in pages if p["status"] not in ("done", "archived")]
+    ladder = {"active": [p for p in open_pages if p["age"] <= 14],
+              "drifting": [p for p in open_pages if 14 < p["age"] <= 42],
+              "dormant": [p for p in open_pages if p["age"] > 42]}
+    closed = [p for p in pages if p["status"] in ("done", "archived")]
+    by_cat: dict[str, int] = {}
+    for p in pages:
+        by_cat[p["category"]] = by_cat.get(p["category"], 0) + 1
+
+    rows = read_dispositions(v)
+    counts: dict[str, int] = {}
+    sessions: set[str] = set()
+    for r in rows:
+        counts[r.get("verdict", "?")] = counts.get(r.get("verdict", "?"), 0) + 1
+        m = re.match(r"transcript://([^#]+)", r.get("source") or "")
+        if m:
+            sessions.add(m.group(1))
+    kept, dumped = counts.get("keep", 0) + counts.get("act", 0), counts.get("dump", 0)
+    keep_rate = f"{kept}/{kept + dumped}" if (kept + dumped) else "—"
+    last_ts = max((r.get("ts", "") for r in rows), default="")
+    inbox_files = sorted(v.inbox.glob("*.md")) if v.inbox.exists() else []
+
+    share = v.root / v.cfg["share_dir"]
+
+    def library(sub: str) -> str:
+        d = share / sub
+        if not d.exists():
+            return "<li>none yet</li>"
+        items = []
+        seen: set[str] = set()
+        entries = sorted(d.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True)
+        for p in entries:
+            if p.name.startswith(("_", ".")) or p.stem in seen:
+                continue
+            seen.add(p.stem)
+            sib = [link(s, s.suffix[1:]) for s in sorted(d.glob(p.stem + ".*"))
+                   if s.suffix in (".md", ".html", ".pdf")]
+            if p.is_dir():
+                sib = [link(p, "open")]
+            if sib:
+                items.append(f"<li>{esc(p.stem)} · {' · '.join(sib)}</li>")
+        return "\n".join(items) or "<li>none yet</li>"
+
+    def ladder_list(key: str, cap: int = 12) -> str:
+        ps = sorted(ladder[key], key=lambda p: p["age"])
+        out = [f"<li>{link(p['path'], p['title'])} <span class=dim>{p['date']}</span></li>"
+               for p in ps[:cap]]
+        if len(ps) > cap:
+            out.append(f"<li class=dim>… and {len(ps) - cap} more</li>")
+        return "\n".join(out) or "<li class=dim>none</li>"
+
+    commons_html = "".join(
+        f"<li><b>{esc(c.get('name', '?'))}</b> · audience {esc(c.get('audience', '?'))} · "
+        f"{'ok' if Path(c['path']).expanduser().is_dir() else '<b>MISSING PATH</b>'} · "
+        f"<span class=dim>{esc(c['path'])}</span></li>"
+        for c in v.commons) or "<li class=dim>none — solo vault</li>"
+
+    cats_html = "".join(f"<li>{esc(k)}: {n}</li>" for k, n in sorted(by_cat.items())) \
+        or "<li class=dim>empty — run /surface after your next real session</li>"
+
+    body = f"""<!doctype html><html><head><meta charset="utf-8">
+<title>surface — {esc(v.root.name)}</title>
+<style>
+ body{{font:15px/1.5 -apple-system,system-ui,sans-serif;max-width:960px;margin:2rem auto;
+      padding:0 1rem;color:#1a1a1a;background:#fafaf7}}
+ h1{{font-size:1.4rem}} h2{{font-size:1.05rem;margin:1.6rem 0 .4rem;border-bottom:1px solid #ddd}}
+ .grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}}
+ .card{{background:#fff;border:1px solid #e3e1da;border-radius:8px;padding: .8rem 1rem}}
+ .dim{{color:#8a877e;font-size:.85em}} ul{{margin:.3rem 0;padding-left:1.2rem}}
+ .stamp{{color:#8a877e;font-size:.8rem}} a{{color:#155e63}}
+ .big{{font-size:1.6rem;font-weight:700}} td,th{{text-align:left;padding:.15rem .8rem .15rem 0}}
+</style></head><body>
+<h1>surface · {esc(v.root.name)}</h1>
+<p class=stamp>Generated {now_iso()} — a read-only lens, regenerated after every verb.
+The files are the truth; edit and explore them in Obsidian or any editor.</p>
+
+<div class=grid>
+<div class=card><h2>The brain</h2>
+<p><span class=big>{len(pages)}</span> wiki pages · keep rate {keep_rate}</p>
+<ul>{cats_html}</ul>
+<p class=dim>{len(closed)} closed (done/archived)</p></div>
+
+<div class=card><h2>Recency</h2>
+<table><tr><th>Active (&le;2w)</th><td>{len(ladder['active'])}</td></tr>
+<tr><th>Drifting (2–6w)</th><td>{len(ladder['drifting'])}</td></tr>
+<tr><th>Dormant (&gt;6w)</th><td>{len(ladder['dormant'])}</td></tr></table>
+<p class=dim>Drifting/dormant pile up? Run <b>/share review</b>.</p></div>
+
+<div class=card><h2>Harvest scorecard</h2>
+<table>
+<tr><th>sessions harvested</th><td>{len(sessions)}</td></tr>
+<tr><th>candidates proposed</th><td>{counts.get('proposed', 0)}</td></tr>
+<tr><th>kept / dumped</th><td>{kept} / {dumped}</td></tr>
+<tr><th>shielded (refused)</th><td>{counts.get('shielded', 0)}</td></tr>
+<tr><th>published to commons</th><td>{counts.get('published', 0)}</td></tr>
+<tr><th>awaiting triage</th><td>{len(inbox_files)}</td></tr>
+<tr><th>last activity</th><td>{esc(last_ts[:10] or '—')}</td></tr></table></div>
+
+<div class=card><h2>Setup</h2>
+<ul><li>author: {esc(v.cfg.get('author') or '(unset)')}</li>
+<li>vault: <span class=dim>{esc(v.root)}</span></li>
+<li>wiki: {esc(v.cfg['wiki_dir'])}/ · share: {esc(v.cfg['share_dir'])}/</li></ul>
+<h2>Commons</h2><ul>{commons_html}</ul>
+<p class=dim>Config is the file surface.config.json — this card only displays it.</p></div>
+</div>
+
+<h2>Drifting</h2><ul>{ladder_list('drifting')}</ul>
+<h2>Dormant</h2><ul>{ladder_list('dormant')}</ul>
+
+<div class=grid>
+<div class=card><h2>Digests &amp; reviews</h2><ul>{library('digests')}</ul></div>
+<div class=card><h2>Briefs</h2><ul>{library('briefs')}</ul></div>
+<div class=card><h2>Packs</h2><ul>{library('packs')}</ul></div>
+</div>
+
+<p class=stamp>The verbs: /surface (harvest a session) · /weave (tend the vault) ·
+/share (give back — or “/share review” for your own recall) · /scan (find connections).</p>
+</body></html>"""
+    out = v.root / "dashboard.html"
+    out.write_text(body)
+    return out
+
+
+def cmd_dashboard(args) -> int:
+    v = Vault(find_vault(args.vault))
+    print(f"dashboard -> {write_dashboard(v)}")
+    return 0
+
+
 # --- Commands -------------------------------------------------------------------
 def cmd_init(args) -> int:
     root = Path(args.vault).expanduser().resolve() if args.vault else Path.cwd()
@@ -309,7 +465,9 @@ def cmd_init(args) -> int:
     if not claude_md.exists():
         claude_md.write_text(VAULT_CLAUDE_MD)
     register_vault(root)
+    dash = write_dashboard(v)
     print(f"vault ready at {root}  (registered — the verbs will find it from any folder)")
+    print(f"dashboard -> {dash}  (your running reference; regenerated after every verb)")
     return 0
 
 
@@ -635,6 +793,10 @@ def main(argv=None) -> int:
     pd.add_argument("verdict")
     pd.add_argument("--reason", default="")
     pd.set_defaults(func=cmd_dispose)
+
+    pdash = sub.add_parser("dashboard", parents=[common],
+                           help="Regenerate dashboard.html from vault state (pure lens)")
+    pdash.set_defaults(func=cmd_dashboard)
 
     pc = sub.add_parser("commons", parents=[common],
                         help="Manage commons connections: list / add / remove")

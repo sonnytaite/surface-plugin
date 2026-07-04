@@ -10,6 +10,21 @@ You are setting up a **vault**: a plain folder of markdown that the Surface loop
 writes. One vault per person. Everything the loop learns about the user lives in *their*
 vault; nothing personal lives in the plugin.
 
+## 0. Returning user? Reconfigure, don't re-create
+
+If a vault already exists (registry `~/.claude/surface-vaults.json`, or a
+`surface.config.json` above cwd), this is a **re-run** — welcome them back, no ceremony,
+never scaffold over what exists (`init` is idempotent and only fills gaps):
+
+1. Show the current answers — author, vault path, category dirs, connected commons —
+   and ask what to change (AskUserQuestion: everything's fine / change something /
+   add another vault). Apply changes to `surface.config.json`.
+2. Check the gap: last activity date (`status` shows it) vs today. If they lapsed,
+   there is un-harvested history — offer `/surface backfill` for the gap, exactly the
+   welcome-back move that restarts the habit. No guilt; the transcripts waited.
+3. Re-run `init` (fills anything missing), regenerate the dashboard, and remind them
+   of the one habit in a sentence.
+
 ## 1. The first question — new vault or existing?
 
 If the user passed a path, adopt it (treat as "existing folder") and skip to step 2.
@@ -129,6 +144,12 @@ articles, papers, notes there and /weave distils them), `wiki/` (the LLM-maintai
 human-reviewed knowledge), and a vault `CLAUDE.md` (the schema — any Claude session
 opened in the vault knows the rules). Say so in one sentence; it helps people who read
 the gist recognise the shape.
+
+`init` also generates **`dashboard.html`** at the vault root — the running reference
+from minute one: config, harvest scorecard, recency ladder, and a library of digests/
+briefs/packs, all as links. Open it for them (`open <vault>/dashboard.html`) so their
+first sight of the vault is the lens, not a folder listing. It regenerates after every
+verb; it is read-only (the files are the truth — Obsidian is where they edit).
 
 Last practical note: `init` registers the vault in `~/.claude/surface-vaults.json`, so
 the verbs work from **any** folder — the user keeps working in their normal project

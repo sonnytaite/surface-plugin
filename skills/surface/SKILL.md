@@ -137,7 +137,8 @@ into a clean wiki page (drop the inbox scaffolding), wire links **both ways** �
 `[[links]]` from the new page to related pages AND a back-link from each related page —
 then update `wiki/index.md`. Move the file with `git mv` when the vault is a repo.
 Commit with a plain message (`surface: <n> insights from <session/topic>`); ask before
-pushing.
+pushing. Finish every run — harvest, triage, or backfill — by regenerating the lens:
+`python3 "${CLAUDE_PLUGIN_ROOT}/rails/promote.py" dashboard --vault <vault>`.
 
 ## Wrapping up? Harvest is time-shiftable
 

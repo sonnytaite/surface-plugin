@@ -79,6 +79,10 @@ commons content of *other* authors — connections to their work go in the repor
 connection pages, and if the user wants, a `connections.md` note in the commons under
 their own name.
 
+Finish every scan by regenerating the lens:
+`python3 "${CLAUDE_PLUGIN_ROOT}/rails/promote.py" dashboard --vault <vault>` — the
+report joins the dashboard's library.
+
 ## Guardrails
 
 - Report connections; never merge or rewrite other people's items.

@@ -167,3 +167,6 @@ is weaker than the thing itself. Assemble `share/packs/<slug>/`:
 - **Write ≠ publish ≠ send.** Three separate moments; the send is always the user's.
 - Divergence between what the rubric ranks high and what the user actually picks is
   signal: suggest a rubric re-weight (bump its version) when you notice it.
+- Finish every run (digest, review, brief, pack, publish) by regenerating the lens:
+  `python3 "${CLAUDE_PLUGIN_ROOT}/rails/promote.py" dashboard --vault <vault>` — new
+  artefacts appear as links on `dashboard.html`.
