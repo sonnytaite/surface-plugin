@@ -504,7 +504,7 @@ command · the files are the truth — read and edit them in Obsidian or any edi
 </article>
 
 <article class=card>
-<h2>What have you given back?</h2>
+<h2>What have you shared?</h2>
 <p class=stat>{shared_total}<small>made to share</small></p>
 <p class=read>{published} actually published to a team space — writing and sharing
 are separate gates.</p>
