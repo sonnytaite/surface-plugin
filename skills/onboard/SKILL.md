@@ -99,8 +99,15 @@ solo, and `/scan` will explain the commons when they are ready.
   your vault, and across your team's commons if you have one.
 
 Tell them the cold-start plainly: the loop gets better with use, because every keep/dump
-verdict trains it. The first `/surface` run is the acceptance test — point it at a real
-session.
+verdict trains it. Then give them ONE next step, concretely: **go do a real piece of
+work with Claude Code — research a question, draft something, build something — and when
+the session winds down, run `/surface`.** Not homework, not migration: the vault fills
+from real work or not at all. (The fuller first-week arc is in the plugin README; don't
+recite it here — one step is enough.)
+
+Connection management, mentioned once: `promote.py commons list` shows what this vault
+is connected to (also shown by `status`); `commons remove <name>` disconnects instantly
+and touches nothing already published.
 
 Last practical note: the loop finds the vault by walking up from the current directory,
 so the natural habit is **starting Claude Code sessions inside the vault folder** (or any

@@ -442,6 +442,79 @@ def cmd_publish(args) -> int:
     return 0
 
 
+def describe_commons(c: dict) -> str:
+    import subprocess
+    p = Path(c["path"]).expanduser()
+    state = "ok" if p.is_dir() else "MISSING PATH"
+    remote = ""
+    if p.is_dir():
+        try:
+            r = subprocess.run(["git", "-C", str(p), "remote", "get-url", "origin"],
+                               capture_output=True, text=True, timeout=10)
+            remote = r.stdout.strip() if r.returncode == 0 else "(no git remote)"
+        except (OSError, subprocess.TimeoutExpired):
+            remote = "(git unavailable)"
+    return (f"  {c.get('name', '?'):<14} audience={c.get('audience', '?'):<7} "
+            f"{state:<13} {c['path']}" + (f"\n{'':17}remote: {remote}" if remote else ""))
+
+
+def save_commons(vault_root: Path, commons: list[dict]) -> None:
+    cfg_path = vault_root / CONFIG_NAME
+    cfg = json.loads(cfg_path.read_text()) if cfg_path.exists() else dict(DEFAULT_CONFIG)
+    cfg["commons"] = commons
+    cfg_path.write_text(json.dumps(cfg, indent=2) + "\n")
+
+
+def cmd_commons(args) -> int:
+    """Manage commons connections. The connection is one config entry — adding it
+    connects, removing it disconnects. Removing NEVER touches the commons repo or
+    anything already published there."""
+    v = Vault(find_vault(args.vault))
+    if args.action == "list":
+        if not v.commons:
+            print("no commons connected — this vault is solo.\n"
+                  "connect one: promote.py commons add <name> --path <dir> --audience <team|public>")
+            return 0
+        print(f"commons connected to {v.root.name}:")
+        for c in v.commons:
+            print(describe_commons(c))
+        return 0
+    if args.action == "add":
+        if not (args.name and args.path and args.audience):
+            print("usage: commons add <name> --path <dir> --audience <team|public>", file=sys.stderr)
+            return 1
+        if args.audience not in COMMONS_AUDIENCE_TIERS:
+            print(f"audience must be one of: {', '.join(COMMONS_AUDIENCE_TIERS)}", file=sys.stderr)
+            return 1
+        if any(c.get("name") == args.name for c in v.commons):
+            print(f"a commons named {args.name!r} is already connected", file=sys.stderr)
+            return 1
+        p = Path(args.path).expanduser()
+        if not p.is_dir():
+            print(f"path does not exist: {p} — clone the commons repo there first", file=sys.stderr)
+            return 1
+        entry = {"name": args.name, "path": args.path, "audience": args.audience}
+        save_commons(v.root, [*v.commons, entry])
+        print(f"connected: {args.name} (audience {args.audience}) -> {args.path}")
+        return 0
+    if args.action == "remove":
+        if not args.name:
+            print("usage: commons remove <name>", file=sys.stderr)
+            return 1
+        kept = [c for c in v.commons if c.get("name") != args.name]
+        if len(kept) == len(v.commons):
+            names = ", ".join(c.get("name", "?") for c in v.commons) or "(none)"
+            print(f"no commons named {args.name!r} (connected: {names})", file=sys.stderr)
+            return 1
+        save_commons(v.root, kept)
+        print(f"disconnected: {args.name}. Your local clone and anything you already "
+              f"published there are untouched — to withdraw content, delete your files "
+              f"in the commons repo itself and push (note: git history keeps old "
+              f"versions; that is why hold-tier never enters in the first place).")
+        return 0
+    return 1
+
+
 def cmd_status(args) -> int:
     v = Vault(find_vault(args.vault))
     rows = read_dispositions(v)
@@ -454,6 +527,12 @@ def cmd_status(args) -> int:
     for verdict, n in sorted(counts.items()):
         print(f"  {verdict:<10} {n}")
     print(f"_inbox awaiting review: {inbox_n}")
+    if v.commons:
+        print(f"commons connected: {len(v.commons)}")
+        for c in v.commons:
+            print(describe_commons(c))
+    else:
+        print("commons connected: none (solo vault)")
     return 0
 
 
@@ -493,6 +572,14 @@ def main(argv=None) -> int:
     pd.add_argument("verdict")
     pd.add_argument("--reason", default="")
     pd.set_defaults(func=cmd_dispose)
+
+    pc = sub.add_parser("commons", parents=[common],
+                        help="Manage commons connections: list / add / remove")
+    pc.add_argument("action", choices=["list", "add", "remove"])
+    pc.add_argument("name", nargs="?", help="commons name (for add/remove)")
+    pc.add_argument("--path", help="local clone of the commons repo (for add)")
+    pc.add_argument("--audience", choices=list(COMMONS_AUDIENCE_TIERS), help="team|public (for add)")
+    pc.set_defaults(func=cmd_commons)
 
     pb = sub.add_parser("publish", parents=[common],
                         help="Copy a gated brief/pack into a commons (tier + shield enforced)")

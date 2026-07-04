@@ -79,6 +79,32 @@ up — it is the outcome, not the entry fee.
 
 Then finish a real working session and run `/surface`.
 
+## Your first week
+
+The loop feeds on your real work, not on homework. There is nothing to fill in,
+migrate, or study first — the vault starts empty and that is correct.
+
+1. **Day one — install, onboard, then just work.** Set up your vault with `/onboard`
+   (a few minutes). Then do a normal piece of work with Claude Code — research a
+   question, draft a document, prototype something. Any session where you learned
+   something counts.
+2. **End of that session — run `/surface`.** It extracts the durable insights, a
+   critic argues against each one, and you answer keep or dump. Your first few wiki
+   pages appear. This is the moment the plugin proves itself or doesn't — if a real
+   session gives you nothing worth keeping, tell us, that's a bug report.
+3. **Rest of the week — repeat.** `/surface` after each substantive session. Keep/dump
+   takes a minute; your dumps are training signal, not waste. Run `/weave` once toward
+   the end of the week — it links what accumulated and tidies the index.
+4. **When the wiki has ~10+ pages — run `/share`.** The digest shows you what you've
+   built up, ranked by what is worth a teammate's attention. Pick one, get a brief
+   (or point `/share` at a project folder for a pack), gate it, publish it to your
+   team's commons.
+5. **Once two people have published — run `/scan`.** This is where the compound
+   interest starts: connections between people's work that nobody spotted.
+
+One habit carries the whole thing: **end real sessions with `/surface`.** Everything
+else follows from the vault that habit builds.
+
 ## The team layer (optional)
 
 Point two or more vaults at a shared git repo — the **commons** — and `/share` publishes
