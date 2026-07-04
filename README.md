@@ -28,7 +28,7 @@ see by reading a list.
 |---|---|
 | **`/surface`** | Harvest a working session: extract the durable insights, run them past an adversarial critic, ask you keep/dump on each, weave the keeps into your wiki. Run it again anytime — it does the right next thing. |
 | **`/weave`** | Tend the whole vault: ingest new raw material, refresh stale pages, find cross-connections, flag contradictions, update the index. One reversible commit. |
-| **`/share`** | Give the work back: a ranked **digest** (back-of-magazine executive summaries of everything), a **brief** (one idea, told properly), or a **pack** (the artefact itself — prototype, mockup, or a deeply-described problem — with how-to-run and the decision trail). Every draft passes an adversarial fidelity check before it reaches you, and nothing leaves without your explicit gate. |
+| **`/share`** | Give the work back: a ranked **digest** (back-of-magazine executive summaries of everything), a **brief** (one idea, told properly), or a **pack** (the artefact itself — prototype, mockup, or a deeply-described problem — with how-to-run and the decision trail). Every draft passes an adversarial fidelity check before it reaches you, and nothing leaves without your explicit gate. `/share review` flips the same machinery inward: a private review digest of everything you've worked on, grouped by recency (active / drifting / dormant) with your open threads — so three-week-old work stops vanishing into the abyss. |
 | **`/scan`** | Find machine-scale connections — across your vault, and across your team's shared **commons** repo if you have one: same problem attacked from two angles, a problem matching someone else's prototype, clusters nobody has named. |
 
 Plus `/onboard`, once, to set up your vault.

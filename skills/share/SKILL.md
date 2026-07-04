@@ -18,11 +18,45 @@ are the behaviour; edit-the-file is how the user tunes this skill.
 
 ## Route by argument
 
-- **Bare `/share`** → ask (AskUserQuestion): **Projects digest** / **Research digest** /
-  **Full digest — everything, back-of-magazine style** / **Show existing digests**.
-  (Themes/custom categories from the config go in a second question if they exist.)
+- **Bare `/share`** → ask (AskUserQuestion): **My review — everything, for my eyes** /
+  **Projects digest** / **Research digest** / **Full digest — everything,
+  back-of-magazine style** / **Show existing digests**. (Themes/custom categories from
+  the config go in a second question if they exist.)
+- **`/share review`** → the review digest directly (skip the menu).
 - **`/share <idea-or-slug>`** → write a **brief** for that idea.
 - **`/share <path>`** (a directory) → assemble a **pack** for that project.
+
+## The review digest — the back page for YOUR OWN memory
+
+Different animal from the team digests: the reader is the owner, so there is **no
+rubric ranking, no sensitivity gate — `hold` items belong here** — and recency beats
+importance. The job is to stop work from drifting into the abyss: what you touched three
+weeks ago is fading; two months back is gone until something resurfaces it. This
+resurfaces it.
+
+Write `share/digests/<YYYY-MM-DD>-review.md`, opening with a banner: **PERSONAL REVIEW —
+not for sharing (contains held material); never publish this to a commons.**
+
+1. **Every wiki page, grouped by category** (projects / research / themes), each entry:
+   one-sentence gist + stage + **last-touched date**. Compute last-touched honestly from
+   git (`git log -1 --format=%as -- <file>`), falling back to file mtime — never guess.
+2. **Then regroup by recency** — this ladder is the payoff:
+   - **Active** (touched within ~2 weeks) — one line each, you know these.
+   - **Drifting** (2–6 weeks) — full synopsis each; these are the save-able ones.
+   - **Dormant** (older) — synopsis + one honest question each: *still alive, done, or
+     dead?* Suggest the disposition, let the owner call it.
+3. **Open threads** — sweep pages for open questions, "next:" lines, and statuses that
+   look stale against reality (a "prototype next week" line from two months ago). List
+   them with their page and age.
+
+Present it in conversation too, not just as a file — the whole point is that the owner
+does not go reading the wiki unprompted. If they act on an entry ("carbsync is dead",
+"revive the X research"), update the page's status there and then.
+
+The rail: because the review digest contains held material, NEVER hand it to
+`promote.py publish` — and say so in the banner. (The rail would refuse a `hold`-tagged
+artefact anyway; tag the review digest `sensitivity: hold` in its frontmatter so the
+refusal is guaranteed, not just instructed.)
 
 ## Digest — the back-of-magazine executive summary
 
