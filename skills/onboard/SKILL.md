@@ -20,7 +20,7 @@ never scaffold over what exists (`init` is idempotent and only fills gaps):
    and ask what to change (AskUserQuestion: everything's fine / change something /
    add another vault). Apply changes to `surface.config.json`.
 2. Check the gap: last activity date (`status` shows it) vs today. If they lapsed,
-   there is un-harvested history — offer `/surface backfill` for the gap, exactly the
+   there is un-harvested history — offer `/capture backfill` for the gap, exactly the
    welcome-back move that restarts the habit. No guilt; the transcripts waited.
 3. Re-run `init` (fills anything missing), regenerate the dashboard, and remind them
    of the one habit in a sentence.
@@ -104,7 +104,7 @@ solo, and `/scan` will explain the commons when they are ready.
 
 ## 4. Explain the loop (briefly, in your own words)
 
-- **/surface** — after a working session, harvests the durable insights into the vault.
+- **/capture** — after a working session, harvests the durable insights into the vault.
   You judge every candidate: keep, dump, or act. Your verdicts are remembered and become
   the system's taste.
 - **/weave** — tends the whole vault: connections, contradictions, the index.
@@ -124,13 +124,13 @@ project spread) and tell them what you found:
 
 - **Real history** (roughly 5+ substantive sessions): *"You have 23 sessions across 4
   projects going back to April — your past work can join the vault too."* Offer to run
-  the backfill sweep now (it hands off to `/surface backfill`: bounded batches, keep/dump
+  the backfill sweep now (it hands off to `/capture backfill`: bounded batches, keep/dump
   as normal) or later. Backfilling the most recent batch right now is the strongest
   first experience — the vault is non-empty within minutes of onboarding.
 - **Little history** (a fresh setup): say so, skip the offer, and give the ONE next
   step instead: **go do a real piece of work with Claude Code — research a question,
   draft something, build something — and when the session winds down (or the next
-  morning), run `/surface`.** Not homework, not migration: the vault fills from real
+  morning), run `/capture`.** Not homework, not migration: the vault fills from real
   work or not at all.
 
 (The fuller first-week arc is in the plugin README; don't recite it here.)
@@ -153,7 +153,7 @@ verb; it is read-only (the files are the truth — Obsidian is where they edit).
 
 Last practical note: `init` registers the vault in `~/.claude/surface-vaults.json`, so
 the verbs work from **any** folder — the user keeps working in their normal project
-directories and `/surface` still finds the vault. With several vaults, the skills ask
+directories and `/capture` still finds the vault. With several vaults, the skills ask
 which one.
 
 ## Guardrails

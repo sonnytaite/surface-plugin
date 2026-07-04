@@ -1,12 +1,12 @@
 ---
 name: weave
-description: Tend the whole vault — ingest new raw material, refresh stale pages, find genuine cross-connections between pages, lint for contradictions and orphans, then update the index and commit. Run "/weave" periodically (weekly-ish, or after a burst of /surface runs). Incremental by default; "--full" for a deep re-link; "--dry-run" to write without committing.
+description: Tend the whole vault — ingest new raw material, refresh stale pages, find genuine cross-connections between pages, lint for contradictions and orphans, then update the index and commit. Run "/weave" periodically (weekly-ish, or after a burst of /capture runs). Incremental by default; "--full" for a deep re-link; "--dry-run" to write without committing.
 argument-hint: "[--full | --dry-run]"
 ---
 
 # /weave — whole-vault synthesis
 
-`/surface` harvests one session at a time, human-gated. `/weave` is the other axis: an
+`/capture` harvests one session at a time, human-gated. `/weave` is the other axis: an
 autonomous, git-reversible pass over the **whole vault**. It never deletes user content
 and never shares anything; its blast radius is one commit the user can revert.
 
@@ -56,6 +56,6 @@ during.
 
 - Never delete a user-authored page; deprecate by noting it and asking.
 - Never touch `share/` outputs (they are gated artefacts) or `_inbox/` (that is
-  /surface's queue).
+  /capture's queue).
 - Shielded content stays out of the wiki, always.
 - One commit per weave; the commit message lists what changed so the revert is easy.

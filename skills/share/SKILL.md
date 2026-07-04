@@ -36,8 +36,8 @@ resurfaces it.
 
 **Day-one honesty first:** if the wiki has fewer than ~3 pages, do NOT generate a
 hollow digest. Say plainly that the review reads the wiki, not the machine, and offer
-the two ways to fill it: `/surface` (harvest the session you just finished) and
-`/surface backfill` (sweep your PAST sessions in bounded batches — past-you joins the
+the two ways to fill it: `/capture` (harvest the session you just finished) and
+`/capture backfill` (sweep your PAST sessions in bounded batches — past-you joins the
 vault too). Run again once there is something to recall.
 
 Write `share/digests/<YYYY-MM-DD>-review.md`, opening with a banner: **PERSONAL REVIEW —

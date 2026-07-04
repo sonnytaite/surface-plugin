@@ -228,9 +228,9 @@ def write_candidate(v: Vault, c: dict, cid: str) -> Path:
     )
     footer = (
         f"\n\n---\n*Surfaced from {c['source']} (origin: {c['origin']}). "
-        f"**To triage:** answer the keep/dump questions when /surface asks, or set "
+        f"**To triage:** answer the keep/dump questions when /capture asks, or set "
         f"`status:` above to `keep` / `act` / `dump` yourself (optionally add a "
-        f"`reason:` line) and run /surface again to reconcile.*\n"
+        f"`reason:` line) and run /capture again to reconcile.*\n"
     )
     path.write_text(fm + (c["body"] or "") + footer)
     return path
@@ -272,7 +272,7 @@ A personal knowledge vault managed with the `surface` Claude Code plugin
   never leaves this vault — not into candidates, not into shared artefacts, not into
   a commons.
 
-The verbs: /surface (harvest a session) · /weave (tend the vault) · /share (give
+The verbs: /capture (harvest a session) · /weave (tend the vault) · /share (give
 back) · /scan (find connections).
 """
 
@@ -339,11 +339,11 @@ def write_dashboard(v: Vault) -> Path:
 
     # --- "What should you do next?" — one adaptive suggestion, with its why -----
     if inbox_n:
-        nxt = ("Run <b>/surface</b> and decide keep-or-let-go.",
+        nxt = ("Run <b>/capture</b> and decide keep-or-let-go.",
                f"{inbox_n} idea{'s' if inbox_n != 1 else ''} from earlier sessions "
                f"{'are' if inbox_n != 1 else 'is'} waiting for your call.")
     elif not pages and not sessions:
-        nxt = ("Do a real piece of work, then run <b>/surface</b>.",
+        nxt = ("Do a real piece of work, then run <b>/capture</b>.",
                "Your vault is ready and empty — it fills from real sessions, "
                "not from homework.")
     elif len(fading) >= 5:
@@ -351,16 +351,16 @@ def write_dashboard(v: Vault) -> Path:
                f"{len(fading)} pieces of work are fading from memory — "
                "bring past-you back to the table.")
     elif days_idle is not None and days_idle > 7:
-        nxt = ("Run <b>/surface backfill</b> to catch up.",
+        nxt = ("Run <b>/capture backfill</b> to catch up.",
                f"It has been {days_idle} days since the last capture — "
                "the transcripts kept everything while you were away.")
     else:
-        nxt = ("All caught up — end your next real session with <b>/surface</b>.",
+        nxt = ("All caught up — end your next real session with <b>/capture</b>.",
                "That one habit keeps the whole thing alive.")
 
     keep_read = (f"You keep about {kept} of every {kept + dumped} ideas — letting go "
                  "is part of the training." if (kept + dumped)
-                 else "No keep-or-let-go decisions yet — they start with your first /surface.")
+                 else "No keep-or-let-go decisions yet — they start with your first /capture.")
     last_read = (f"Last capture {esc(last_ts[:10])}." if last_ts
                  else "No captures yet.")
 
@@ -537,7 +537,7 @@ blocked from ever leaving.</p>
 <span class=path>{esc(v.root)}</span></p>
 <p style="margin-top:.5rem">Settings live in surface.config.json (this page only reads
 them — run /onboard to change answers). The four commands, plainly:
-<b>/surface</b> capture what a session taught you · <b>/weave</b> tidy and connect the
+<b>/capture</b> capture what a session taught you · <b>/weave</b> tidy and connect the
 whole vault · <b>/share</b> give work back (or “/share review” to remind yourself) ·
 <b>/scan</b> find connections across yours and your team's work.</p>
 </footer>

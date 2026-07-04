@@ -26,7 +26,7 @@ see by reading a list.
 
 | Command | What it does |
 |---|---|
-| **`/surface`** | Harvest a working session: extract the durable insights, run them past an adversarial critic, ask you keep/dump on each, weave the keeps into your wiki. Run it again anytime — it does the right next thing. |
+| **`/capture`** | Harvest a working session: extract the durable insights, run them past an adversarial critic, ask you keep/dump on each, weave the keeps into your wiki. Run it again anytime — it does the right next thing. |
 | **`/weave`** | Tend the whole vault: ingest new raw material, refresh stale pages, find cross-connections, flag contradictions, update the index. One reversible commit. |
 | **`/share`** | Give the work back: a ranked **digest** (back-of-magazine executive summaries of everything), a **brief** (one idea, told properly), or a **pack** (the artefact itself — prototype, mockup, or a deeply-described problem — with how-to-run and the decision trail). Every draft passes an adversarial fidelity check before it reaches you, and nothing leaves without your explicit gate. `/share review` flips the same machinery inward: a private review digest of everything you've worked on, grouped by recency (active / drifting / dormant) with your open threads — so three-week-old work stops vanishing into the abyss. |
 | **`/scan`** | Find machine-scale connections — across your vault, and across your team's shared **commons** repo if you have one: same problem attacked from two angles, a problem matching someone else's prototype, clusters nobody has named. |
@@ -74,10 +74,15 @@ up — it is the outcome, not the entry fee.
 ```
 /plugin marketplace add sonnytaite/surface-plugin
 /plugin install surface@surface-plugin
-/onboard
+/surface:onboard
 ```
 
-Then finish a real working session and run `/surface`.
+Then finish a real working session and run `/surface:capture`.
+
+**A note on command names:** Claude Code namespaces plugin commands, so the full forms
+are `/surface:onboard`, `/surface:capture`, `/surface:weave`, `/surface:share`, and
+`/surface:scan` — typing the short name in the `/` picker finds them. These docs write
+the short forms (`/capture`, `/share`, …) for readability.
 
 ## Your first week
 
@@ -88,13 +93,13 @@ migrate, or study first — the vault starts empty and that is correct.
    (a few minutes). Then do a normal piece of work with Claude Code — research a
    question, draft a document, prototype something. Any session where you learned
    something counts.
-2. **End of that session — run `/surface`.** It extracts the durable insights, a
+2. **End of that session — run `/capture`.** It extracts the durable insights, a
    critic argues against each one, and you answer keep or dump. Your first few wiki
    pages appear. This is the moment the plugin proves itself or doesn't — if a real
    session gives you nothing worth keeping, tell us, that's a bug report.
-   *(Already have weeks of Claude Code history? `/surface backfill` sweeps your past
+   *(Already have weeks of Claude Code history? `/capture backfill` sweeps your past
    sessions in bounded batches — past-you joins the vault too.)*
-3. **Rest of the week — repeat.** `/surface` after each substantive session. Keep/dump
+3. **Rest of the week — repeat.** `/capture` after each substantive session. Keep/dump
    takes a minute; your dumps are training signal, not waste. Run `/weave` once toward
    the end of the week — it links what accumulated and tidies the index.
 4. **When the wiki has ~10+ pages — run `/share`.** The digest shows you what you've
@@ -104,7 +109,7 @@ migrate, or study first — the vault starts empty and that is correct.
 5. **Once two people have published — run `/scan`.** This is where the compound
    interest starts: connections between people's work that nobody spotted.
 
-One habit carries the whole thing: **end real sessions with `/surface`.** Everything
+One habit carries the whole thing: **end real sessions with `/capture`.** Everything
 else follows from the vault that habit builds.
 
 ## The team layer (optional)
@@ -151,7 +156,7 @@ distilling.
 The shape is Karpathy's three layers — `sources/` (input), `wiki/` (LLM-maintained
 knowledge), `CLAUDE.md` (schema) — with the share layer and loop state added. Vaults
 register in `~/.claude/surface-vaults.json` at init, so the verbs work from any project
-folder: you keep working where you normally work, and `/surface` finds the vault.
+folder: you keep working where you normally work, and `/capture` finds the vault.
 
 The `_style/` files are the point: the voice, the selection rubric, the fidelity
 checklist, and your domain rules are markdown you edit, not prompts you can't see.
@@ -164,7 +169,7 @@ earned its way here by producing briefings a real team read. It stands on:
 - **Andrej Karpathy's [LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)**
   — the spec for a personal, densely-linked plain-text knowledge base that an LLM
   maintains and a human reviews shaped the vault format, and his four daily operations
-  map closely onto the verbs here (capture → `/surface`, sync + lint → `/weave`,
+  map closely onto the verbs here (capture → `/capture`, sync + lint → `/weave`,
   digest → `/share`). Recommended reading before (or after) your first vault.
 - **Every's [compound-engineering](https://github.com/EveryInc/compound-engineering)
   plugin** — the architectural model for shipping a way-of-working as a Claude Code

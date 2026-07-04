@@ -33,7 +33,7 @@ only what you explicitly gate lands here.
 3. Connect it (or let /onboard do it when it asks about a commons):
    python3 <plugin>/rails/promote.py commons add [team] --path ~/vaults/[team]-commons --audience team
 4. Then just work. Do a real piece of research or building in Claude Code and end the
-   session with /surface. That's the whole habit. /share brings gated work here;
+   session with /capture. That's the whole habit. /share brings gated work here;
    /scan finds the connections between all of us.
 
 ## How this repo works
@@ -54,7 +54,7 @@ is one command (`commons remove <name>` — touches nothing already published).
 
 ## 4. Cadence that makes it compound
 
-- **The one habit:** everyone ends real working sessions with `/surface`. Everything
+- **The one habit:** everyone ends real working sessions with `/capture`. Everything
   else follows from this.
 - **`/share` when a digest says so** — not on a schedule. The first briefs usually
   appear in week two.

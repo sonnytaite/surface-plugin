@@ -1,10 +1,10 @@
 ---
-name: surface
-description: Harvest a working session into your vault — extract the durable, net-new insights, run them past an adversarial critic, then triage them with the user (keep/dump) and weave the keeps into the wiki. State-aware — run "/surface" after a session to harvest, and run it again any time to triage or reconcile what is waiting. Use when the user wants to capture what a session taught them.
+name: capture
+description: Harvest a working session into your vault — extract the durable, net-new insights, run them past an adversarial critic, then triage them with the user (keep/dump) and weave the keeps into the wiki. State-aware — run "/capture" after a session to harvest, and run it again any time to triage or reconcile what is waiting. Use when the user wants to capture what a session taught them.
 argument-hint: "[session | topic | \"this\" | \"last\"]"
 ---
 
-# /surface — harvest a session into your second brain
+# /capture — harvest a session into your second brain
 
 You are the **doer** in the Surface loop. Judgment is yours; every guarantee (shield,
 dedup, provenance, disposition log) lives in
@@ -67,7 +67,7 @@ already sit in `~/.claude/projects/*/`. Backfill harvests them, bounded.
    current session's staging and triage, do NOT start reading another transcript. Never
    run the sweep so deep that the triage happens in a degraded context.
 5. **End each run honestly:** what was swept, what remains, and the restart line —
-   *"14 sessions left in your window. Start a fresh session and run `/surface backfill`
+   *"14 sessions left in your window. Start a fresh session and run `/capture backfill`
    to continue — it picks up exactly where this left off."* A month of history is
    typically two to four sittings, and the vault is genuinely useful after the first.
 
@@ -76,7 +76,7 @@ finite; projects older than the window (or older than Claude itself) have no ses
 to sweep. Tell the user plainly, then offer the pattern that works: **start a session in
 the project's folder, walk the repo together — README, git history, the code's shape —
 and interview the owner about the decisions, dead ends, and where it stands now. Then
-`/surface` that session.** The project page and its lessons enter the vault with real
+`/capture` that session.** The project page and its lessons enter the vault with real
 provenance (this new session), and the owner's memory is the source it honestly is.
 
 ## 2. Read the content — the reasoning, not the first message
@@ -150,15 +150,15 @@ pushing. Finish every run — harvest, triage, or backfill — by regenerating t
 
 ## Wrapping up? Harvest is time-shiftable
 
-Transcripts persist — nothing is lost by not running `/surface` the second a session
+Transcripts persist — nothing is lost by not running `/capture` the second a session
 ends. When the user is in a hurry (closing the laptop, heading out), offer the split
 explicitly instead of making them wait:
 
 - **Stage now, judge later:** extract and stage the candidates (the fast part), spawn
   the critic as a **background** agent, and tell the user to go — "candidates staged,
-  critic running; next `/surface` starts with your keep/dump questions." Step 0's
+  critic running; next `/capture` starts with your keep/dump questions." Step 0's
   state-awareness makes the resume automatic.
-- **Nothing now:** tomorrow's `/surface last` (or the next backfill) harvests today's
+- **Nothing now:** tomorrow's `/capture last` (or the next backfill) harvests today's
   session identically. The morning-after habit is as valid as the session-end habit —
   what matters is that it happens, not when.
 
