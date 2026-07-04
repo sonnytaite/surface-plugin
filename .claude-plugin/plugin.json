@@ -1,7 +1,7 @@
 {
   "name": "surface",
   "displayName": "Surface",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "A bounded, human-verified loop for the augmented researcher: harvest sessions into a personal wiki (/capture), tend it (/weave), share back briefs, digests and packs (/share), and find machine-scale connections across your own and your team's work (/scan).",
   "author": {
     "name": "Sonny Taite",

@@ -414,6 +414,18 @@ def write_dashboard(v: Vault) -> Path:
         1 for sub in ("briefs", "packs") if (share / sub).exists()
         for p in (share / sub).iterdir() if not p.name.startswith(("_", ".")))
 
+    import subprocess
+    try:
+        r = subprocess.run(["git", "-C", str(v.root), "remote", "get-url", "origin"],
+                           capture_output=True, text=True, timeout=10)
+        vault_remote = r.stdout.strip() if r.returncode == 0 else ""
+    except (OSError, subprocess.TimeoutExpired):
+        vault_remote = ""
+    backup_line = (f"Backed up to <span class=path>{esc(vault_remote)}</span> — keep that repo <b>private</b>, always."
+                   if vault_remote else
+                   "<b class=warn>Not backed up</b> — this vault lives on one disk only. "
+                   "Run /onboard to add a private remote.")
+
     body = f"""<!doctype html><html lang=en><head><meta charset="utf-8">
 <meta name=viewport content="width=device-width,initial-scale=1">
 <title>{esc(v.root.name)} — surface</title>
@@ -537,6 +549,7 @@ blocked from ever leaving.</p>
 <footer>
 <p><b>{esc(v.cfg.get('author') or 'Unnamed')}</b>'s vault at
 <span class=path>{esc(v.root)}</span></p>
+<p style="margin-top:.5rem">{backup_line}</p>
 <p style="margin-top:.5rem">Settings live in surface.config.json (this page only reads
 them — run /onboard to change answers). The four commands, plainly:
 <b>/capture</b> capture what a session taught you · <b>/weave</b> tidy and connect the

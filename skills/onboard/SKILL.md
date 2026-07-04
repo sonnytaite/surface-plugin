@@ -16,9 +16,11 @@ If a vault already exists (registry `~/.claude/surface-vaults.json`, or a
 `surface.config.json` above cwd), this is a **re-run** — welcome them back, no ceremony,
 never scaffold over what exists (`init` is idempotent and only fills gaps):
 
-1. Show the current answers — author, vault path, category dirs, connected commons —
-   and ask what to change (AskUserQuestion: everything's fine / change something /
-   add another vault). Apply changes to `surface.config.json`.
+1. Show the current answers — author, vault path, category dirs, connected commons,
+   **and whether the vault has a backup remote** (`git remote get-url origin`) — and
+   ask what to change (AskUserQuestion: everything's fine / change something /
+   add another vault). Apply changes to `surface.config.json`; a missing remote gets
+   the backup offer from step 2.
 2. Check the gap: last activity date (`status` shows it) vs today. If they lapsed,
    there is un-harvested history — offer `/capture backfill` for the gap, exactly the
    welcome-back move that restarts the habit. No guilt; the transcripts waited.
@@ -85,6 +87,28 @@ cp -n "${CLAUDE_PLUGIN_ROOT}/templates/"{house-style.md,selection-rubric.md,fide
 
 If they wanted git: `git init`, write a `.gitignore` containing `surfaces/_inbox/`
 (candidates are transient and regenerable; only durable layers travel), initial commit.
+
+### Back it up (recommended, optional — and PRIVATE-ONLY, no exceptions)
+
+A vault on one disk is one spilled coffee from gone, and a remote is also how a vault
+travels between machines. Ask (AskUserQuestion):
+
+- **Create a private GitHub repo now (Recommended)** — needs the `gh` CLI authed
+  (`gh auth status`). Run
+  `gh repo create <username>/vault-<name> --private --source <vault> --push`, then
+  **verify before declaring success**: `gh repo view --json visibility` must say
+  PRIVATE. If gh is missing or unauthed, fall through to the next option with the
+  commands shown.
+- **I'll add my own remote later** — print the two lines
+  (`git remote add origin <url>` · `git push -u origin main`) and move on.
+- **Skip — local only** — fine; say in one sentence what they're accepting (no backup,
+  single machine) and that `/onboard` can add one any time. No guilt.
+
+**Hard rule: a vault remote is PRIVATE, always.** The vault holds `hold`-tier and
+shielded material by design. Never create a public repo for a vault; if you ever find
+a vault whose existing remote is public, stop and tell the user plainly before doing
+anything else. (Do not confuse this with a *commons* — commons repos have their own
+audience rules; the vault itself is nobody's to read.)
 
 ## 3. Optional: connect a team commons
 
