@@ -92,6 +92,8 @@ migrate, or study first — the vault starts empty and that is correct.
    critic argues against each one, and you answer keep or dump. Your first few wiki
    pages appear. This is the moment the plugin proves itself or doesn't — if a real
    session gives you nothing worth keeping, tell us, that's a bug report.
+   *(Already have weeks of Claude Code history? `/surface backfill` sweeps your past
+   sessions in bounded batches — past-you joins the vault too.)*
 3. **Rest of the week — repeat.** `/surface` after each substantive session. Keep/dump
    takes a minute; your dumps are training signal, not waste. Run `/weave` once toward
    the end of the week — it links what accumulated and tidies the index.

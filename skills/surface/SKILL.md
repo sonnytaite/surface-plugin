@@ -43,6 +43,28 @@ project dir is the working directory with `/` replaced by `-`).
 - a topic phrase → grep the transcripts for it and pick the matching session; if
   ambiguous, show the top few and ask.
 - a session id → use it directly.
+- **`backfill`** (or the user asks to harvest their history / past sessions) → the
+  bring-past-me-along mode, below.
+
+### Backfill — sweeping your history into the vault
+
+New installs are not day zero of the user's work: weeks or months of past sessions
+already sit in `~/.claude/projects/*/`. Backfill harvests them, bounded.
+
+1. **Take stock first.** Enumerate transcript files across ALL project dirs, newest
+   first, skipping tiny ones. Check the disposition log for session ids already
+   harvested (`grep transcript://<session-id> <state_dir>/dispositions.jsonl`) and skip
+   fully-swept sessions. Tell the user what exists — how many substantive sessions,
+   over what date range, across which projects — before touching anything.
+2. **Ask scope** (AskUserQuestion): last 2 weeks / last 6 weeks / everything /
+   pick specific projects.
+3. **Process a bounded batch per run:** 3–5 sessions, staging at most ~12 candidates
+   total across them, then critic + triage exactly as normal. The triage queue is the
+   bottleneck — a big backlog means MORE RUNS, never a bigger queue. Dedup makes
+   repeat sweeps safe.
+4. **End each run honestly:** what was swept, what remains ("14 sessions left in your
+   window — run `/surface backfill` again to continue"). A month of history is
+   typically two to four sittings, and the vault is genuinely useful after the first.
 
 ## 2. Read the content — the reasoning, not the first message
 
