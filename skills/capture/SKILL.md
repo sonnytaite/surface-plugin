@@ -58,15 +58,22 @@ already sit in `~/.claude/projects/*/`. Backfill harvests them, bounded.
    over what date range, across which projects — before touching anything.
 2. **Ask scope** (AskUserQuestion): last 2 weeks / last 6 weeks / everything /
    pick specific projects.
-3. **Process a bounded batch per run:** 3–5 sessions, staging at most ~12 candidates
+3. **Confirm the batch BEFORE spending.** Deep extraction and the critic pass are the
+   expensive part — never start them on sessions the user has not approved one by one.
+   Present the proposed 3–5 sessions as a list — project · date · size · a one-line
+   gist from a cheap peek at the first user message (do NOT read the transcripts yet) —
+   and ask (AskUserQuestion, multiSelect) which to include. Dropping one here costs
+   nothing; it stays available for future runs. Only after this confirmation do you
+   read, extract, and judge.
+4. **Process the confirmed batch:** staging at most ~12 candidates
    total across them, then critic + triage exactly as normal. The triage queue is the
    bottleneck — a big backlog means MORE RUNS, never a bigger queue. Dedup makes
    repeat sweeps safe.
-4. **Watch the context watermark.** Reading transcripts is context-heavy. When your
+5. **Watch the context watermark.** Reading transcripts is context-heavy. When your
    context use approaches roughly half, stop cleanly at a session boundary — finish the
    current session's staging and triage, do NOT start reading another transcript. Never
    run the sweep so deep that the triage happens in a degraded context.
-5. **End each run honestly:** what was swept, what remains, and the restart line —
+6. **End each run honestly:** what was swept, what remains, and the restart line —
    *"14 sessions left in your window. Start a fresh session and run `/capture backfill`
    to continue — it picks up exactly where this left off."* A month of history is
    typically two to four sittings, and the vault is genuinely useful after the first.
