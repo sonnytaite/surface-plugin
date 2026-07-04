@@ -10,7 +10,5 @@
   "homepage": "https://github.com/sonnytaite/surface-plugin",
   "repository": "https://github.com/sonnytaite/surface-plugin",
   "license": "MIT",
-  "keywords": ["second-brain", "knowledge", "research", "sharing", "wiki", "human-in-the-loop"],
-  "skills": ["./skills/"],
-  "agents": ["./agents/"]
+  "keywords": ["second-brain", "knowledge", "research", "sharing", "wiki", "human-in-the-loop"]
 }
