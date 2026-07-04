@@ -364,7 +364,7 @@ def write_dashboard(v: Vault) -> Path:
     last_read = (f"Last capture {esc(last_ts[:10])}." if last_ts
                  else "No captures yet.")
 
-    cats_html = " · ".join(f"{esc(k)} {n}" for k, n in sorted(by_cat.items())) \
+    cats_html = " · ".join(f"{n} in {esc(k)}" for k, n in sorted(by_cat.items())) \
         or "It fills from your first kept idea."
 
     def fading_rows(cap: int = 10) -> str:
@@ -427,7 +427,7 @@ a:hover{{border-bottom-color:var(--accent)}}
 .kicker{{font:600 .68rem/1 -apple-system,system-ui,sans-serif;letter-spacing:.22em;
  text-transform:uppercase;color:var(--soft)}}
 header h1{{font-size:2.5rem;font-weight:600;letter-spacing:-.01em;margin:.35rem 0 .5rem}}
-.stamp{{color:var(--soft);font-size:.85rem;font-style:italic}}
+.stamp{{color:var(--soft);font-size:.85rem}}
 .next{{margin:2.2rem 0 2.4rem;padding:1.15rem 1.4rem;background:var(--card);
  border-left:3px solid var(--accent);box-shadow:0 1px 0 var(--line)}}
 .next p.do{{font-size:1.3rem;margin:.3rem 0 .2rem}}
@@ -446,16 +446,17 @@ header h1{{font-size:2.5rem;font-weight:600;letter-spacing:-.01em;margin:.35rem 
 .read{{font-size:.92rem;margin:.45rem 0 .2rem}}
 .fine{{font-size:.85rem;color:var(--soft)}}
 section{{margin-top:2.4rem}}
-section>h2{{font-size:1.15rem;font-style:italic;font-weight:600;margin-bottom:.6rem}}
+section>h2{{font:600 .72rem/1 -apple-system,system-ui,sans-serif;letter-spacing:.22em;
+ text-transform:uppercase;color:var(--soft);margin-bottom:.8rem}}
 table{{width:100%;border-collapse:collapse;font-size:.95rem}}
 td{{padding:.45rem .8rem .45rem 0;border-top:1px solid var(--line)}}
 .age{{color:var(--soft);font-size:.85rem;white-space:nowrap}}
 .lib{{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1.1rem}}
 .lib ul{{list-style:none;padding:0}}
 .lib li{{padding:.4rem 0;border-top:1px solid var(--line);font-size:.93rem}}
-.lib h3{{font-size:.95rem;font-style:italic;font-weight:600}}
+.lib h3{{font-size:.98rem;font-weight:600}}
 .t{{text-transform:capitalize}} .fmt{{color:var(--soft);font-size:.85rem;margin-left:.3rem}}
-.empty{{color:var(--soft);font-style:italic}}
+.empty{{color:var(--soft)}}
 .path{{display:block;color:var(--soft);font-size:.75rem;font-family:ui-monospace,monospace;
  word-break:break-all}}
 .warn{{color:var(--warm)}}
