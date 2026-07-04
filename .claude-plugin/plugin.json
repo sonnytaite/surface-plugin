@@ -1,0 +1,16 @@
+{
+  "name": "surface",
+  "displayName": "Surface",
+  "version": "0.1.0",
+  "description": "A bounded, human-verified loop for the augmented researcher: harvest sessions into a personal wiki (/surface), tend it (/weave), share back briefs, digests and packs (/share), and find machine-scale connections across your own and your team's work (/scan).",
+  "author": {
+    "name": "Sonny Taite",
+    "url": "https://github.com/sonnytaite"
+  },
+  "homepage": "https://github.com/sonnytaite/surface-plugin",
+  "repository": "https://github.com/sonnytaite/surface-plugin",
+  "license": "MIT",
+  "keywords": ["second-brain", "knowledge", "research", "sharing", "wiki", "human-in-the-loop"],
+  "skills": ["./skills/"],
+  "agents": ["./agents/"]
+}

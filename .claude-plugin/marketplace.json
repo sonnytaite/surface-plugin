@@ -1,0 +1,18 @@
+{
+  "name": "surface-plugin",
+  "owner": {
+    "name": "Sonny Taite"
+  },
+  "description": "Home marketplace for the surface plugin.",
+  "plugins": [
+    {
+      "name": "surface",
+      "source": "./",
+      "description": "A bounded, human-verified loop for the augmented researcher: harvest sessions into a personal wiki, tend it, share back briefs/digests/packs, and scan for machine-scale connections across a team commons.",
+      "version": "0.1.0",
+      "author": { "name": "Sonny Taite" },
+      "license": "MIT",
+      "keywords": ["second-brain", "knowledge", "research", "sharing", "wiki"]
+    }
+  ]
+}
