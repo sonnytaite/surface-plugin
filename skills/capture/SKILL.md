@@ -128,9 +128,21 @@ Honour the output: `shielded` = the rail refused it (leave it); `skip` = seen be
 ## 4. Critic, then the human gate
 
 **Critic (always, not optional):** spawn the `surface-critic` agent (Agent tool) with the
-list of staged candidate files and the vault path. It writes advisory verdicts into each
-candidate's frontmatter via `promote.py annotate`. Doer ≠ judge — you do not critique
-your own candidates.
+list of staged candidate files and the vault path. Doer ≠ judge — you do not critique your
+own candidates. The critic is **read-only** (no write tools, no shell): it cannot touch the
+vault, so it returns one verdict line per candidate as its final message —
+`<candidate_id> · <verdict> · <keep|dump> · <objection>`. **You** record each one through
+the rails (the critic has no way to):
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/rails/promote.py" --vault <vault> annotate <candidate_id> \
+  --verdict <pass|weak|duplicate|unsupported|contradictory> \
+  --note "<the critic's objection>" --suggest <keep|dump>
+```
+
+If the critic's note asks to retitle/rewrite/split/merge a candidate, that is guidance for
+your weave step (5) — never let the critic have authored a wiki page; it can't, and it
+mustn't be asked to.
 
 **Triage in conversation:** present each candidate — title, two-line gist, the critic's
 verdict — and ask the user with AskUserQuestion (max 4 questions per call, so batch;
