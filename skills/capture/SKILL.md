@@ -135,10 +135,11 @@ vault, so it returns one verdict line per candidate as its final message —
 the rails (the critic has no way to):
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/rails/promote.py" --vault <vault> annotate <candidate_id> \
+python3 "${CLAUDE_PLUGIN_ROOT}/rails/promote.py" annotate <candidate_id> --vault <vault> \
   --verdict <pass|weak|duplicate|unsupported|contradictory> \
   --note "<the critic's objection>" --suggest <keep|dump>
 ```
+(Flag order matters: the `annotate` subcommand comes first, then `--vault` and the rest.)
 
 If the critic's note asks to retitle/rewrite/split/merge a candidate, that is guidance for
 your weave step (5) — never let the critic have authored a wiki page; it can't, and it
