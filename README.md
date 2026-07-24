@@ -1,5 +1,8 @@
 # surface
 
+[![CI](https://github.com/sonnytaite/surface-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/sonnytaite/surface-plugin/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A Claude Code plugin for the augmented researcher who runs ahead of their team —
 and wants to hand the leap back.
 
@@ -155,8 +158,9 @@ distilling.
 
 The shape is Karpathy's three layers — `sources/` (input), `wiki/` (LLM-maintained
 knowledge), `CLAUDE.md` (schema) — with the share layer and loop state added. Vaults
-register in `~/.claude/surface-vaults.json` at init, so the verbs work from any project
-folder: you keep working where you normally work, and `/capture` finds the vault.
+register in `surface-vaults.json` in Claude's config dir (`$CLAUDE_CONFIG_DIR`, default
+`~/.claude`) at init, so the verbs work from any project folder: you keep working where
+you normally work, and `/capture` finds the vault.
 
 The `_style/` files are the point: the voice, the selection rubric, the fidelity
 checklist, and your domain rules are markdown you edit, not prompts you can't see.
@@ -206,8 +210,10 @@ the state. See → dashboard; touch → Obsidian; do → the verbs.
 
 ## Status
 
-**v0.1 — prototype.** The loop shape is proven in daily personal use; this packaged,
-vault-agnostic form is young. Expect edges. Issues and PRs welcome.
+**v0.3.5 — young but tested.** The loop shape is proven in daily personal use; this
+packaged, vault-agnostic form is young. The rails (`promote.py`) carry a full test
+suite and CI; the skills are still earning their edges. See [CHANGELOG.md](CHANGELOG.md).
+Issues and PRs welcome.
 
 ## License
 

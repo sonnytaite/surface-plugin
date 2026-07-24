@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: tests (py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # promote.py promises Python 3.9+, stdlib only — hold that line.
+        python: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Run test suite
+        run: python3 -m unittest discover -s tests -v
+
+  validate:
+    name: manifests & skills
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate plugin.json / marketplace.json agree
+        run: |
+          python3 - <<'EOF'
+          import json, sys
+
+          plugin = json.load(open(".claude-plugin/plugin.json"))
+          market = json.load(open(".claude-plugin/marketplace.json"))
+
+          errors = []
+          for key in ("name", "version", "description", "license"):
+              if not plugin.get(key):
+                  errors.append(f"plugin.json missing {key}")
+
+          entry = next((p for p in market.get("plugins", [])
+                        if p.get("name") == plugin["name"]), None)
+          if entry is None:
+              errors.append(f"marketplace.json has no entry named {plugin['name']!r}")
+          else:
+              for key in ("version", "license"):
+                  if entry.get(key) != plugin.get(key):
+                      errors.append(
+                          f"{key} drift: plugin.json={plugin.get(key)!r} "
+                          f"marketplace.json={entry.get(key)!r}")
+
+          if errors:
+              print("\n".join(errors)); sys.exit(1)
+          print(f"manifests OK: {plugin['name']} v{plugin['version']}")
+          EOF
+      - name: Validate SKILL.md frontmatter
+        run: |
+          python3 - <<'EOF'
+          import re, sys
+          from pathlib import Path
+
+          errors = []
+          skills = sorted(Path("skills").glob("*/SKILL.md"))
+          if not skills:
+              errors.append("no skills found under skills/*/SKILL.md")
+          for f in skills:
+              text = f.read_text()
+              m = re.match(r"^---\n(.*?)\n---\n", text, re.S)
+              if not m:
+                  errors.append(f"{f}: missing frontmatter block"); continue
+              fm = m.group(1)
+              for field in ("name", "description"):
+                  if not re.search(rf"^{field}:\s*\S", fm, re.M):
+                      errors.append(f"{f}: frontmatter missing {field!r}")
+              if f.parent.name != re.search(r"^name:\s*(\S+)", fm, re.M).group(1):
+                  errors.append(f"{f}: frontmatter name != directory name")
+
+          if errors:
+              print("\n".join(errors)); sys.exit(1)
+          print(f"skills OK: {', '.join(f.parent.name for f in skills)}")
+          EOF
+      - name: Validate version referenced consistently
+        run: |
+          python3 - <<'EOF'
+          import json, re, sys
+
+          version = json.load(open(".claude-plugin/plugin.json"))["version"]
+          readme = open("README.md").read()
+          m = re.search(r"^## Status\s*\n+\*\*v([\d.]+)", readme, re.M)
+          if m and m.group(1) != version:
+              print(f"README Status says v{m.group(1)} but plugin.json says v{version}")
+              sys.exit(1)
+          print(f"version consistent: v{version}")
+          EOF

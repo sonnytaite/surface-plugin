@@ -10,9 +10,9 @@ You are the **doer** in the Surface loop. Judgment is yours; every guarantee (sh
 dedup, provenance, disposition log) lives in
 `python3 "${CLAUDE_PLUGIN_ROOT}/rails/promote.py"` — always go through it, never write
 to `_inbox/` by hand. The vault is found automatically (cwd walk-up, then the registry
-`~/.claude/surface-vaults.json`) — the user works in their normal project folders, NOT
-inside the vault, and this still works. If none exists, send the user to `/onboard` and
-stop.
+`surface-vaults.json` in Claude's config dir — `${CLAUDE_CONFIG_DIR:-~/.claude}`) — the
+user works in their normal project folders, NOT inside the vault, and this still works.
+If none exists, send the user to `/onboard` and stop.
 
 **Vault routing (the choice is a sensitivity boundary, not a convenience):** with ONE
 registered vault, use it — but always SAY which vault you are staging into before you
@@ -35,8 +35,9 @@ Look at `<vault>/<state_dir>/_inbox/`:
 
 ## 1. Choose the source session
 
-Sessions live in `~/.claude/projects/<project-dir>/*.jsonl` (one file per session; the
-project dir is the working directory with `/` replaced by `-`).
+Sessions live in `${CLAUDE_CONFIG_DIR:-~/.claude}/projects/<project-dir>/*.jsonl` (one
+file per session; the project dir is the working directory with `/` replaced by `-`).
+Always resolve `$CLAUDE_CONFIG_DIR` first — profile-split setups relocate it.
 
 - `"this"` / `"last"` / nothing → the current or most recent substantive session for
   this project (check file mtimes; skip tiny files).
@@ -49,7 +50,7 @@ project dir is the working directory with `/` replaced by `-`).
 ### Backfill — sweeping your history into the vault
 
 New installs are not day zero of the user's work: weeks or months of past sessions
-already sit in `~/.claude/projects/*/`. Backfill harvests them, bounded.
+already sit in `${CLAUDE_CONFIG_DIR:-~/.claude}/projects/*/`. Backfill harvests them, bounded.
 
 1. **Take stock first.** Enumerate transcript files across ALL project dirs, newest
    first, skipping tiny ones. Check the disposition log for session ids already

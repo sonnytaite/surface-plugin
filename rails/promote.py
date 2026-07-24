@@ -62,16 +62,34 @@ COMMONS_AUDIENCE_TIERS = {
 
 
 # --- Vault + config -----------------------------------------------------------
-REGISTRY = Path.home() / ".claude" / "surface-vaults.json"
+def claude_config_dir() -> Path:
+    """Claude Code's config dir. Honours CLAUDE_CONFIG_DIR (profile-split and
+    enterprise setups relocate it); defaults to ~/.claude. Resolved at call
+    time, not import time, so the env var always wins."""
+    env = os.environ.get("CLAUDE_CONFIG_DIR", "").strip()
+    return Path(env).expanduser() if env else Path.home() / ".claude"
+
+
+def registry_path() -> Path:
+    return claude_config_dir() / "surface-vaults.json"
+
+
+def _read_registry_file(path: Path) -> list[str]:
+    if not path.exists():
+        return []
+    try:
+        vaults = json.loads(path.read_text())
+    except json.JSONDecodeError:
+        return []
+    return vaults if isinstance(vaults, list) else []
 
 
 def load_registry() -> list[str]:
-    if not REGISTRY.exists():
-        return []
-    try:
-        vaults = json.loads(REGISTRY.read_text())
-    except json.JSONDecodeError:
-        return []
+    vaults = _read_registry_file(registry_path())
+    # Legacy location (pre-CLAUDE_CONFIG_DIR fix): merge, never write back there.
+    legacy = Path.home() / ".claude" / "surface-vaults.json"
+    if legacy != registry_path():
+        vaults += [v for v in _read_registry_file(legacy) if v not in vaults]
     return [v for v in vaults if (Path(v).expanduser() / CONFIG_NAME).exists()]
 
 
@@ -79,14 +97,16 @@ def register_vault(root: Path) -> None:
     vaults = load_registry()
     if str(root) not in vaults:
         vaults.append(str(root))
-        REGISTRY.parent.mkdir(parents=True, exist_ok=True)
-        REGISTRY.write_text(json.dumps(vaults, indent=2) + "\n")
+        reg = registry_path()
+        reg.parent.mkdir(parents=True, exist_ok=True)
+        reg.write_text(json.dumps(vaults, indent=2) + "\n")
 
 
 def find_vault(explicit: str | None) -> Path:
     """--vault > SURFACE_VAULT > walk up from cwd > registry (if unambiguous).
-    The registry (~/.claude/surface-vaults.json, written by init) is what lets the
-    verbs work from ANY project folder, not only inside the vault."""
+    The registry (surface-vaults.json in Claude's config dir, written by init)
+    is what lets the verbs work from ANY project folder, not only inside the
+    vault."""
     if explicit:
         return Path(explicit).expanduser().resolve()
     env = os.environ.get("SURFACE_VAULT")

@@ -12,7 +12,8 @@ vault; nothing personal lives in the plugin.
 
 ## 0. Returning user? Reconfigure, don't re-create
 
-If a vault already exists (registry `~/.claude/surface-vaults.json`, or a
+If a vault already exists (registry `surface-vaults.json` in
+`${CLAUDE_CONFIG_DIR:-~/.claude}`, or a
 `surface.config.json` above cwd), this is a **re-run** — welcome them back, no ceremony,
 never scaffold over what exists (`init` is idempotent and only fills gaps):
 
@@ -143,7 +144,7 @@ verdict trains it.
 ## 5. Take stock of their history — offer the first fill
 
 Nobody installing a plugin is on day one of Claude Code. Look at
-`~/.claude/projects/*/` (count substantive transcript files, note the date range and
+`${CLAUDE_CONFIG_DIR:-~/.claude}/projects/*/` (count substantive transcript files, note the date range and
 project spread) and tell them what you found:
 
 - **Real history** (roughly 5+ substantive sessions): *"You have 23 sessions across 4
@@ -175,7 +176,8 @@ briefs/packs, all as links. Open it for them (`open <vault>/dashboard.html`) so 
 first sight of the vault is the lens, not a folder listing. It regenerates after every
 verb; it is read-only (the files are the truth — Obsidian is where they edit).
 
-Last practical note: `init` registers the vault in `~/.claude/surface-vaults.json`, so
+Last practical note: `init` registers the vault in `surface-vaults.json` in Claude's
+config dir (`${CLAUDE_CONFIG_DIR:-~/.claude}`), so
 the verbs work from **any** folder — the user keeps working in their normal project
 directories and `/capture` still finds the vault. With several vaults, the skills ask
 which one.
