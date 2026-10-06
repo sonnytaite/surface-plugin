@@ -4,6 +4,11 @@ All notable changes to the surface plugin. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com); versions follow semver as far
 as a young plugin honestly can.
 
+## [Unreleased]
+
+### Changed
+- README rewritten in the one-promise, one-diagram, three-line-install shape, with the test count and CI named as evidence and the companion steward plugin linked. No code change.
+
 ## [0.3.5] — 2026-07-24
 
 ### Fixed
